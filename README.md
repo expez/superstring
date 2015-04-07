@@ -4,6 +4,26 @@ Clojure string library
 
 ## Usage
 
+### To shorter string
+
+* [chomp](#chomp) `(s)` `(s separator)`
+* [chop](#chop) `(s)`
+
+### Predicates
+
+* [ends-with?](#ends-with?) `(s suffix)` `(s suffix ignore-case)`
+
+#### chomp `(s)` `(s separator)`
+
+Return a new string with the given record separator removed from the end of the string (if present).
+
+Separator defaults to line.separator.
+
+#### chop `(s)`
+
+Return a new string with the last character removed. If the string
+ends with \\r\\n, both characters are removed. Applying chop to an
+empty string is a no-op.
 
 ## License
 

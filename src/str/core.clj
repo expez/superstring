@@ -1,8 +1,34 @@
 (ns str.core
-  (:require clojure.string))
+  (:require clojure.string)
+  (:refer-clojure :exclude [reverse replace]))
 
-(def lower-case clojure.string/lower-case)
-(def upper-case clojure.string/upper-case)
+;; Taken from [jackknife "0.1.6"]
+(defmacro defalias
+  "Defines an alias for a var: a new var with the same root binding (if
+  any) and similar metadata. The metadata of the alias is its initial
+  metadata (as provided by def) merged into the metadata of the original."
+  ([name orig]
+   `(do
+      (alter-meta!
+       (if (.hasRoot (var ~orig))
+         (def ~name (.getRawRoot (var ~orig)))
+         (def ~name))
+       ;; When copying metadata, disregard {:macro false}.
+       ;; Workaround for http://www.assembla.com/spaces/clojure/tickets/273
+       #(conj (dissoc % :macro)
+              (apply dissoc (meta (var ~orig)) (remove #{:macro} (keys %)))))
+      (var ~name)))
+  ([name orig doc]
+   (list `defalias (with-meta name (assoc (meta name) :doc doc)) orig)))
+
+(defmacro alias-ns
+  "Create an alias for all public vars in ns in this ns."
+  [namespace]
+  `(do ~@(map
+          (fn [n] `(defalias ~(.sym n) ~(symbol (str (.ns n)) (str (.sym n)))))
+          (vals (ns-publics namespace)))))
+
+(alias-ns clojure.string)
 
 (defn ends-with?
   "Return s if s ends with suffix."
@@ -42,10 +68,13 @@
   If seperator is not provided chomp will remove \\n, \\r or \\r\\n from
   the end of s."
   ([s]
+   {:pre [(string? s)]
+    :post [(string? %)]}
    (cond
      (.endsWith s "\r\n") (.substring s 0 (- (.length s) 2))
      (.endsWith s "\r") (.substring s 0 (dec (.length s)))
-     (.endsWith s "\n") (.substring s 0 (dec (.length s)))))
+     (.endsWith s "\n") (.substring s 0 (dec (.length s)))
+     :else s))
   ([s separator]
    {:pre [(string? s)
           (string? separator)]

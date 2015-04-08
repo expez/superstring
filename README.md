@@ -14,6 +14,10 @@ Clojure string library
 * [ends-with?](#ends-with?) `(s suffix)`
 * [starts-with?](#starts-with?) `(s prefix)`
 
+### Misc
+
+* [capitalize](#capitalize) `(s)`
+
 #### chomp `(s)` `(s separator)`
 
 Return a new string with the given record separator removed from the end of the string (if present).
@@ -33,6 +37,11 @@ Returns `s` if `s` starts with `prefix`.
 #### ends-with? `(s suffix)`
 
 Returns `s` if `s` ends with `suffix`.
+
+#### capitalize `(s)`
+
+Return a new string where the first character is
+in upper case and all others in lower case.  ## License
 
 ## License
 

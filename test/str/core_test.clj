@@ -54,3 +54,19 @@
 
 (deftest chopping-the-empty-string-is-a-no-op []
   (is (= (chop "") "")))
+
+(defspec capitalized-strings-has-first-char-in-upper-case 100
+  (prop/for-all [s gen/string
+                 c gen/char-alpha]
+    (Character/isUpperCase (first (capitalize (str c s))))))
+
+(defn- lower-case-ascii-if-letter?
+  ([] true)
+  ([c] (if (Character/isLetter c) (Character/isLowerCase c) true))
+  ([acc c] (and acc (lower-case-ascii-if-letter? c))))
+
+(defspec capitalized-strings-has-rest-of-chars-in-lower-case 100
+  (prop/for-all [s gen/string
+                 c gen/char-alpha]
+    (reduce lower-case-ascii-if-letter?
+            (.substring (capitalize (str c s)) 1))))

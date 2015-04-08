@@ -1,10 +1,15 @@
-(ns str.core)
+(ns str.core
+  (:require clojure.string))
+
+(def lower-case clojure.string/lower-case)
+(def upper-case clojure.string/upper-case)
 
 (defn ends-with?
   "Return s if s ends with suffix."
   [s suffix]
   {:pre [(string? s)
-         (string? suffix)]}
+         (string? suffix)]
+   :post [(or (string? %) (nil? %))]}
   (when (.endsWith s suffix)
     s))
 
@@ -12,7 +17,8 @@
   "Return s if s starts with with prefix."
   [s prefix]
   {:pre [(string? s)
-         (string? prefix)]}
+         (string? prefix)]
+   :post [(or (string? %) (nil? %))]}
   (when (.startsWith s prefix)
     s))
 
@@ -41,9 +47,20 @@
      (.endsWith s "\r") (.substring s 0 (dec (.length s)))
      (.endsWith s "\n") (.substring s 0 (dec (.length s)))))
   ([s separator]
-   {:pre [(not (nil? s))
-          (not (nil? separator))]
-    :post [(not (nil? %))]}
+   {:pre [(string? s)
+          (string? separator)]
+    :post [(string? %)]}
    (if (.endsWith s separator)
      (.substring s 0 (- (.length s) (.length separator)))
      s)))
+
+(defn capitalize
+  "Return a new string where the first character is in upper case and
+  all others in lower case."
+  [s]
+  {:pre [(string? s)]
+   :post [(string? %)]}
+  (case (.length s)
+    0 ""
+    1 (upper-case s)
+    (str (upper-case (.substring s 0 1)) (lower-case (.substring s 1)))) )

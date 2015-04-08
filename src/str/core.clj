@@ -1,9 +1,19 @@
 (ns str.core)
 
-(defn ends-with? [s suffix]
+(defn ends-with?
+  "Return s if s ends with suffix."
+  [s suffix]
   {:pre [(string? s)
          (string? suffix)]}
   (when (.endsWith s suffix)
+    s))
+
+(defn starts-with?
+  "Return s if s starts with with prefix."
+  [s prefix]
+  {:pre [(string? s)
+         (string? prefix)]}
+  (when (.startsWith s prefix)
     s))
 
 (defn chop

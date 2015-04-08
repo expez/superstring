@@ -31,11 +31,17 @@
   (prop/for-all [s gen/string]
     (= (.length (chomp (str s "\r\n"))) (.length s))))
 
-(defspec ends-with?-acts-like-ends-with 100
+(defspec ends-with?-acts-like-endsWith 100
   (prop/for-all [s gen/string
                  suffix gen/string]
     (= (.endsWith (str s suffix) suffix)
        (if (ends-with? (str s suffix) suffix) true false))))
+
+(defspec starts-with?-acts-like-startsWith 100
+  (prop/for-all [s gen/string
+                 prefix gen/string]
+    (= (.startsWith (str prefix s) prefix)
+       (if (starts-with? (str prefix s) prefix) true false))))
 
 (defspec chop-reduces-length-by-1-without-cr 100
   (prop/for-all [s (gen/such-that #(not (ends-with? % "\r\n")) gen/string)]

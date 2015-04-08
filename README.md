@@ -11,7 +11,8 @@ Clojure string library
 
 ### Predicates
 
-* [ends-with?](#ends-with?) `(s suffix)` `(s suffix ignore-case)`
+* [ends-with?](#ends-with?) `(s suffix)`
+* [starts-with?](#starts-with?) `(s prefix)`
 
 #### chomp `(s)` `(s separator)`
 
@@ -24,6 +25,14 @@ Separator defaults to line.separator.
 Return a new string with the last character removed. If the string
 ends with \\r\\n, both characters are removed. Applying chop to an
 empty string is a no-op.
+
+#### starts-with? `(s prefix)`
+
+Returns `s` if `s` starts with `prefix`.
+
+#### ends-with? `(s suffix)`
+
+Returns `s` if `s` ends with `suffix`.
 
 ## License
 

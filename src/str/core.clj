@@ -40,13 +40,22 @@
     s))
 
 (defn starts-with?
-  "Return s if s starts with with prefix."
-  [s prefix]
-  {:pre [(string? s)
-         (string? prefix)]
-   :post [(or (string? %) (nil? %))]}
-  (when (.startsWith s prefix)
-    s))
+  "Return s if s starts with with prefix.
+
+  If a third argument is provided the string comparison is insensitive to case."
+  ([s prefix]
+   {:pre [(string? s)
+          (string? prefix)]
+    :post [(or (string? %) (nil? %))]}
+   (when (.startsWith s prefix)
+     s))
+  ([s prefix ignore-case]
+   {:pre [(string? s)
+          (string? prefix)]
+    :post [(or (string? %) (nil? %))]}
+   (let [beg (.substring s 0 (.length prefix))]
+     (when (.equalsIgnoreCase beg prefix)
+       s))))
 
 (defn chop
   "Return a new string with the last character removed.

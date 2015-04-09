@@ -12,7 +12,7 @@ Clojure string library
 ### Predicates
 
 * [ends-with?](#ends-with?) `(s suffix)`
-* [starts-with?](#starts-with?) `(s prefix)`
+* [starts-with?](#starts-with?) `(s prefix)` `(s prefix ignore-case)`
 
 ### Misc
 
@@ -34,6 +34,8 @@ empty string is a no-op.
 #### starts-with? `(s prefix)`
 
 Returns `s` if `s` starts with `prefix`.
+
+If a third argument is provided the string comparison is insensitive to case.
 
 #### ends-with? `(s suffix)`
 

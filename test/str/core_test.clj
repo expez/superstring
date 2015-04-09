@@ -48,6 +48,11 @@
     (= (.startsWith (str prefix s) prefix)
        (if (str/starts-with? (str prefix s) prefix) true false))))
 
+(defspec starts-with?-can-ignore-case 100
+  (prop/for-all [s gen/string
+                 prefix gen/string]
+    (str/starts-with? (str prefix s) (str/invert-case prefix) :ignore-case)))
+
 (defspec chop-reduces-length-by-1-without-cr 100
   (prop/for-all [s (gen/such-that #(not (str/ends-with? % "\r\n")) gen/string)]
     (= (.length (str/chop s)) (max 0 (dec (.length s))))))

@@ -93,3 +93,13 @@
     0 ""
     1 (upper-case s)
     (str (upper-case (.substring s 0 1)) (lower-case (.substring s 1)))) )
+
+(defn invert-case
+  "Change lower case characters to upper case and vice versa."
+  [s]
+  (let [invert-case (fn [c]
+                      (cond
+                        (Character/isLowerCase c) (Character/toUpperCase c)
+                        (Character/isUpperCase c) (Character/toLowerCase c)
+                        :else c))]
+    (->> s (map invert-case) (apply str))))

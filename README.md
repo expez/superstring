@@ -17,6 +17,7 @@ Clojure string library
 ### Misc
 
 * [capitalize](#capitalize) `(s)`
+* [invert-case](#invert-case) `(s)`
 
 #### chomp `(s)` `(s separator)`
 
@@ -42,6 +43,10 @@ Returns `s` if `s` ends with `suffix`.
 
 Return a new string where the first character is
 in upper case and all others in lower case.  ## License
+
+#### invert-case `(s)`
+
+Change lower case characters to upper case and vice versa.
 
 ## License
 

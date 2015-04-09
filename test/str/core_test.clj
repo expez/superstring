@@ -42,6 +42,11 @@
     (= (.endsWith (str s suffix) suffix)
        (if (str/ends-with? (str s suffix) suffix) true false))))
 
+(defspec ends-with?-can-ignore-case 100
+  (prop/for-all [s gen/string
+                 suffix gen/string]
+    (str/ends-with? (str s suffix ) (str/invert-case suffix) :ignore-case)))
+
 (defspec starts-with?-acts-like-startsWith 100
   (prop/for-all [s gen/string
                  prefix gen/string]

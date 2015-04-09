@@ -32,12 +32,19 @@
 
 (defn ends-with?
   "Return s if s ends with suffix."
-  [s suffix]
-  {:pre [(string? s)
-         (string? suffix)]
-   :post [(or (string? %) (nil? %))]}
-  (when (.endsWith s suffix)
-    s))
+  ([s suffix]
+   {:pre [(string? s)
+          (string? suffix)]
+    :post [(or (string? %) (nil? %))]}
+   (when (.endsWith s suffix)
+     s))
+  ([s suffix ignore-case]
+   {:pre [(string? s)
+          (string? suffix)]
+    :post [(or (string? %) (nil? %))]}
+   (let [end (.substring s (max 0 (- (.length s) (.length suffix))))]
+     (when (.equalsIgnoreCase end suffix)
+       s))))
 
 (defn starts-with?
   "Return s if s starts with with prefix.

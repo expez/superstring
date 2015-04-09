@@ -37,9 +37,11 @@ Returns `s` if `s` starts with `prefix`.
 
 If a third argument is provided the string comparison is insensitive to case.
 
-#### ends-with? `(s suffix)`
+#### ends-with? `(s suffix)` `(s suffix ignore-case)`
 
 Returns `s` if `s` ends with `suffix`.
+
+If a third argument is provided the string comparison is insensitive to case.
 
 #### capitalize `(s)`
 

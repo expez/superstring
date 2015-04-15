@@ -30,89 +30,68 @@
 
 (alias-ns clojure.string)
 
-(defn ends-with?
+(defn ^String ends-with?
   "Return s if s ends with suffix."
-  ([s suffix]
-   {:pre [(string? s)
-          (string? suffix)]
-    :post [(or (string? %) (nil? %))]}
+  ([^String s ^String suffix]
    (when (.endsWith s suffix)
      s))
-  ([s suffix ignore-case]
-   {:pre [(string? s)
-          (string? suffix)]
-    :post [(or (string? %) (nil? %))]}
+  ([^String s ^String suffix ignore-case]
    (let [end (.substring s (max 0 (- (.length s) (.length suffix))))]
      (when (.equalsIgnoreCase end suffix)
        s))))
 
-(defn starts-with?
+(defn ^String starts-with?
   "Return s if s starts with with prefix.
 
   If a third argument is provided the string comparison is insensitive to case."
-  ([s prefix]
-   {:pre [(string? s)
-          (string? prefix)]
-    :post [(or (string? %) (nil? %))]}
+  ([^String s ^String prefix]
    (when (.startsWith s prefix)
      s))
-  ([s prefix ignore-case]
-   {:pre [(string? s)
-          (string? prefix)]
-    :post [(or (string? %) (nil? %))]}
+  ([^String s ^String prefix ignore-case]
    (let [beg (.substring s 0 (.length prefix))]
      (when (.equalsIgnoreCase beg prefix)
        s))))
 
-(defn chop
+(defn ^String chop
   "Return a new string with the last character removed.
 
   If the string ends with \\r\\n, both characters are removed.
 
   Applying chop to an empty string is a no-op."
-  [s]
-  {:pre [(string? s)]
-   :post [(string? %)]}
+  [^String s]
   (if (.endsWith s "\r\n")
     (.substring s 0 (- (.length s) 2))
     (.substring s 0 (max 0 (dec (.length s))))))
 
-(defn chomp
+(defn ^String chomp
   "Return a new string with the given record separator removed from
   the end (if present).
 
   If seperator is not provided chomp will remove \\n, \\r or \\r\\n from
   the end of s."
-  ([s]
-   {:pre [(string? s)]
-    :post [(string? %)]}
+  ([^String s]
    (cond
      (.endsWith s "\r\n") (.substring s 0 (- (.length s) 2))
      (.endsWith s "\r") (.substring s 0 (dec (.length s)))
      (.endsWith s "\n") (.substring s 0 (dec (.length s)))
      :else s))
-  ([s separator]
-   {:pre [(string? s)
-          (string? separator)]
-    :post [(string? %)]}
+  ([^String s ^String separator]
    (if (.endsWith s separator)
      (.substring s 0 (- (.length s) (.length separator)))
      s)))
 
-(defn capitalize
+(defn ^String capitalize
   "Return a new string where the first character is in upper case and
   all others in lower case."
-  [s]
-  {:pre [(string? s)]
-   :post [(string? %)]}
+  [^String s]
   (case (.length s)
     0 ""
     1 (upper-case s)
     (str (upper-case (.substring s 0 1)) (lower-case (.substring s 1)))) )
 
-(defn invert-case
+(defn ^String invert-case
   "Change lower case characters to upper case and vice versa."
-  [s]
+  [^String s]
   (let [invert-case (fn [c]
                       (cond
                         (Character/isLowerCase c) (Character/toUpperCase c)

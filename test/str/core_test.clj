@@ -14,8 +14,13 @@
          (count s)))))
 
 (defspec chomping-string-not-ending-in-seperator-does-not-alter-length 100
-  (prop/for-all [sep gen/string]
-    (prop/for-all [s (gen/such-that #(not (.endsWith % sep)) gen/string)]
+  (prop/for-all [vals (gen/bind (gen/not-empty gen/string)
+                                (fn [sep]
+                                  (gen/tuple (gen/return sep)
+                                             (gen/such-that #(not (.endsWith % sep))
+                                                            gen/string))))]
+    (let [sep (first vals)
+          s (second vals)]
       (= (count (str/chomp s sep)) (count s)))))
 
 (defspec chomp-removes-newline 100

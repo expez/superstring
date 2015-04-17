@@ -1,7 +1,7 @@
 (ns str.core
   (:require clojure.string
             [clojure.string :as str])
-  (:refer-clojure :exclude [reverse replace]))
+  (:refer-clojure :exclude [reverse replace contains?]))
 
 (declare slice)
 
@@ -122,7 +122,7 @@
     1 (upper-case s)
     (str (upper-case (.substring s 0 1)) (lower-case (.substring s 1)))) )
 
-(defn ^String invert-case
+(defn ^String swap-case
   "Change lower case characters to upper case and vice versa."
   [^String s]
   (let [invert-case (fn [c]

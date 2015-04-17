@@ -50,7 +50,7 @@
 (defspec ends-with?-can-ignore-case 100
   (prop/for-all [s gen/string
                  suffix gen/string]
-    (str/ends-with? (str s suffix ) (str/invert-case suffix) :ignore-case)))
+    (str/ends-with? (str s suffix ) (str/swap-case suffix) :ignore-case)))
 
 (defspec starts-with?-acts-like-startsWith 100
   (prop/for-all [s gen/string
@@ -61,7 +61,7 @@
 (defspec starts-with?-can-ignore-case 100
   (prop/for-all [s gen/string
                  prefix gen/string]
-    (str/starts-with? (str prefix s) (str/invert-case prefix) :ignore-case)))
+    (str/starts-with? (str prefix s) (str/swap-case prefix) :ignore-case)))
 
 (defspec chop-reduces-length-by-1-without-cr 100
   (prop/for-all [s (gen/such-that #(not (str/ends-with? % "\r\n")) gen/string)]
@@ -93,7 +93,7 @@
 
 (defspec invert-case-does-not-change-length 100
   (prop/for-all [s gen/string]
-    (= (.length (str/invert-case s)) (.length s))))
+    (= (.length (str/swap-case s)) (.length s))))
 
 (defn- case-to-int [c]
   ;; some chars, like \ß, are lower-case but upcase to themselves
@@ -110,7 +110,7 @@
 (defspec invert-case-changes-case 100
   (prop/for-all [s gen/string]
     (let [cases1 (map case-to-int s)
-          cases2 (map case-to-int (str/invert-case s))]
+          cases2 (map case-to-int (str/swap-case s))]
       (apply = 0 (map + cases1 cases2)))))
 
 (defspec slice-without-end-has-length-1 100

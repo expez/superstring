@@ -180,3 +180,23 @@
     "foo  " (str/pad-right "foo" 5)
     "foo.!" (str/pad-right "foo" 5 ".!")
     "foo.!." (str/pad-right "foo" 6 ".!")))
+
+(deftest left-pad-some-strings
+  (are [expected actual] (= expected actual)
+    "" (str/pad-left "" 0)
+    " " (str/pad-left "" 1)
+    " foo"(str/pad-left "foo" 4)
+    "  foo" (str/pad-left "foo" 5)
+    ".!foo" (str/pad-left "foo" 5 ".!")
+    ".!.foo" (str/pad-left "foo" 6 ".!")))
+
+(defspec left-pad-results-in-strings-with-new-width 100
+  (prop/for-all
+      [vals
+       (gen/bind gen/string
+                 (fn [s]
+                   (gen/tuple (gen/return s)
+                              (gen/such-that #(> % (.length s)) gen/pos-int 100))))]
+    (let [s (first vals)
+          width (second vals)]
+      (= (.length (str/pad-left s width)) width))))

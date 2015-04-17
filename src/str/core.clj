@@ -190,3 +190,18 @@
        (str (.substring p 0 (* (.length padding) lengths-before))
             s
             (.substring p (* (.length padding) lengths-before)))))))
+
+(defn ^String chop-suffix
+  "If s ends with suffix return a new string without the suffix.
+
+  Otherwise return s."
+  ([^String s ^String suffix]
+   (chop-suffix s suffix false))
+  ([^String s ^String suffix ignore-case]
+   {:pre [(not (nil? s))
+          (not (nil? suffix))]
+    :post [(not (nil? %))]}
+   (if (and (>= (.length s) (.length suffix))
+            (ends-with? s suffix ignore-case))
+     (.substring s 0 (- (.length s) (.length suffix)))
+     s)))

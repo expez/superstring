@@ -4,7 +4,7 @@
              [clojure-test :refer [defspec]]
              [generators :as gen]
              [properties :as prop]]
-             [str.core :as str]))
+            [str.core :as str]))
 
 (defspec appending-separator-and-chomping-does-not-alter-length 100
   (prop/for-all [s gen/string
@@ -223,3 +223,17 @@
     (let [s (first vals)
           width (second vals)]
       (= (.length (str/center s width)) width))))
+
+(deftest chop-suffix
+  (are [expected actual] (= expected actual)
+    "" (str/chop-suffix "" "foo")
+    "" (str/chop-suffix "foo" "foo")
+    "foo"(str/chop-suffix "foobar" "bar")
+    "foo" (str/chop-suffix "foo " " ")
+    "foo" (str/chop-suffix "foo" "bar")
+    "foo" (str/chop-suffix "foo" "FOO")
+    "foo" (str/chop-suffix "foo" "O")
+    "fooÅ" (str/chop-suffix "fooÅ" "å")
+    "" (str/chop-suffix "foo" "FOO" :ignore-case)
+    "fo" (str/chop-suffix "foo" "O" :ignore-case)
+    "foo" (str/chop-suffix "fooÅ" "å" :ignore-case)))

@@ -1,6 +1,5 @@
 (ns str.core
-  (:require clojure.string
-            [clojure.string :as str])
+  (:require clojure.string)
   (:refer-clojure :exclude [reverse replace contains?]))
 
 (declare slice)
@@ -149,7 +148,8 @@
   ([^String s ^long width]
    (pad-right s width " "))
   ([^String s ^long width ^String padding]
-   {:pre [(not-empty padding)]
+   {:pre [(not-empty padding)
+          (not (nil? s))]
     :post [(= (.length %) width)]}
    (if (<= width (.length s))
      s
@@ -161,7 +161,8 @@
   ([^String s ^long width]
    (pad-left s width " "))
   ([^String s ^long width ^String padding]
-   {:pre [(not-empty padding)]
+   {:pre [(not-empty padding)
+          (not (nil? s))]
     :post [(= (.length %) width)]}
    (if (<= width (.length s))
      s
@@ -173,7 +174,8 @@
   ([^String s ^long width]
    (center s width " "))
   ([^String s ^long width ^String padding]
-   {:pre [(not-empty padding)]
+   {:pre [(not-empty padding)
+          (not (nil? s))]
     :post [(= (.length %) width)]}
    (if (<= width (.length s))
      s

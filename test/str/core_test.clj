@@ -4,8 +4,7 @@
              [clojure-test :refer [defspec]]
              [generators :as gen]
              [properties :as prop]]
-            [str.core :as str])
-  (:import java.util.Random))
+            [str.core :as str]))
 
 (defspec appending-separator-and-chomping-does-not-alter-length 100
   (prop/for-all [s gen/string
@@ -161,3 +160,23 @@
     "6" (str/slice "0123456" -1)
     "45" (str/slice "0123456" -3 2)
     "456" (str/slice "0123456" -3 100)))
+
+(defspec right-pad-results-in-strings-with-new-width 100
+  (prop/for-all
+      [vals
+       (gen/bind gen/string
+                 (fn [s]
+                   (gen/tuple (gen/return s)
+                              (gen/such-that #(> % (.length s)) gen/pos-int 100))))]
+    (let [s (first vals)
+          width (second vals)]
+      (= (.length (str/pad-right s width)) width))))
+
+(deftest right-pad-some-strings
+  (are [expected actual] (= expected actual)
+    "" (str/pad-right "" 0)
+    " " (str/pad-right "" 1)
+    "foo "(str/pad-right "foo" 4)
+    "foo  " (str/pad-right "foo" 5)
+    "foo.!" (str/pad-right "foo" 5 ".!")
+    "foo.!." (str/pad-right "foo" 6 ".!")))

@@ -130,3 +130,20 @@
                         (Character/isUpperCase c) (Character/toLowerCase c)
                         :else c))]
     (->> s (map invert-case) (apply str))))
+
+(defn ^String pad-right
+  "Pad s with padding, or spaces, until the string reaches width."
+  ([^String s ^long width]
+   (pad-right s width " "))
+  ([^String s ^long width ^String padding]
+   {:pre [(not-empty padding)]
+    :post [(= (.length %) width)]}
+   (if (<= width (.length s))
+     s
+     (let [missing (- width (.length s))
+           full-lengths (Math/floor (/ missing (.length padding)))
+           remaining (if (zero? full-lengths) (- width (.length s))
+                         (rem missing (* full-lengths (.length padding))))
+           p (.concat (apply str (repeat full-lengths padding))
+                      (.substring padding 0 remaining))]
+       (.concat s p)))))

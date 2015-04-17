@@ -210,7 +210,8 @@
     " foo " (str/center "foo" 5)
     "foo.!" (str/center "foo" 5 ".!")
     "foo." (str/center "foo" 4 ".!")
-    ".!foo." (str/center "foo" 6 ".!")))
+    ".!foo." (str/center "foo" 6 ".!")
+    ".!foo.!." (str/center "foo" 8 ".!")))
 
 (defspec center-results-in-strings-with-new-width 100
   (prop/for-all

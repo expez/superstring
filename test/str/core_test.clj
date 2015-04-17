@@ -148,7 +148,7 @@
                  index gen/int]
     (nil? (str/slice s index len))))
 
-(deftest slice-some-strings
+(deftest slice
   (are [expected actual] (= expected actual)
     nil (str/slice "" 0)
     nil (str/slice "" 1)
@@ -172,7 +172,7 @@
           width (second vals)]
       (= (.length (str/pad-right s width)) width))))
 
-(deftest right-pad-some-strings
+(deftest right-pad
   (are [expected actual] (= expected actual)
     "" (str/pad-right "" 0)
     " " (str/pad-right "" 1)
@@ -181,7 +181,7 @@
     "foo.!" (str/pad-right "foo" 5 ".!")
     "foo.!." (str/pad-right "foo" 6 ".!")))
 
-(deftest left-pad-some-strings
+(deftest left-pad
   (are [expected actual] (= expected actual)
     "" (str/pad-left "" 0)
     " " (str/pad-left "" 1)
@@ -200,3 +200,24 @@
     (let [s (first vals)
           width (second vals)]
       (= (.length (str/pad-left s width)) width))))
+
+(deftest center
+  (are [expected actual] (= expected actual)
+    "" (str/center "" 0)
+    " " (str/center "" 1)
+    "foo "(str/center "foo" 4)
+    " foo " (str/center "foo" 5)
+    "foo.!" (str/center "foo" 5 ".!")
+    "foo." (str/center "foo" 4 ".!")
+    ".!foo." (str/center "foo" 6 ".!")))
+
+(defspec center-results-in-strings-with-new-width 100
+  (prop/for-all
+      [vals
+       (gen/bind gen/string
+                 (fn [s]
+                   (gen/tuple (gen/return s)
+                              (gen/such-that #(> % (.length s)) gen/pos-int 100))))]
+    (let [s (first vals)
+          width (second vals)]
+      (= (.length (str/center s width)) width))))

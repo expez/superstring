@@ -1,5 +1,6 @@
 (ns str.core
-  (:require clojure.string)
+  (:require clojure.string
+            [clojure.string :as str])
   (:refer-clojure :exclude [reverse replace]))
 
 (declare slice)
@@ -132,7 +133,7 @@
     (->> s (map invert-case) (apply str))))
 
 (defn- gen-padding
-  "Generate the necessary padding to fill s upto width"
+  "Generate the necessary padding to fill s upto width."
   [^String s ^String padding ^long width]
   (let [missing (- width (.length s))
         full-lengths (Math/floor (/ missing (.length padding)))
@@ -165,3 +166,21 @@
    (if (<= width (.length s))
      s
      (.concat (gen-padding s padding width) s))))
+
+(defn ^String center
+  "Pad both ends of s with padding, or spaces, until the length of s
+  matches width."
+  ([^String s ^long width]
+   (center s width " "))
+  ([^String s ^long width ^String padding]
+   {:pre [(not-empty padding)]
+    :post [(= (.length %) width)]}
+   (if (<= width (.length s))
+     s
+     (let [missing (- width (.length s))
+           full-lengths (Math/ceil (/ missing (.length padding)))
+           p (gen-padding s padding width)
+           lengths-before (Math/floor (/ full-lengths 2))]
+       (str (.substring p 0 (* (.length padding) lengths-before))
+            s
+            (.substring p (* (.length padding) lengths-before)))))))

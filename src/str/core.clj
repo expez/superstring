@@ -68,9 +68,11 @@
    (when (.endsWith s suffix)
      s))
   ([^String s ^String suffix ignore-case]
-   (let [end (.substring s (max 0 (- (.length s) (.length suffix))))]
-     (when (.equalsIgnoreCase end suffix)
-       s))))
+   (if-not ignore-case
+     (ends-with? s suffix)
+     (let [end (.substring s (max 0 (- (.length s) (.length suffix))))]
+       (when (.equalsIgnoreCase end suffix)
+         s)))))
 
 (defn ^String starts-with?
   "Return s if s starts with with prefix.
@@ -80,9 +82,11 @@
    (when (.startsWith s prefix)
      s))
   ([^String s ^String prefix ignore-case]
-   (let [beg (.substring s 0 (.length prefix))]
-     (when (.equalsIgnoreCase beg prefix)
-       s))))
+   (if-not ignore-case
+     (starts-with? s prefix)
+     (let [beg (.substring s 0 (.length prefix))]
+       (when (.equalsIgnoreCase beg prefix)
+         s)))))
 
 (defn ^String chop
   "Return a new string with the last character removed.

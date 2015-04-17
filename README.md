@@ -8,6 +8,7 @@ Clojure string library
 
 * [chomp](#chomp) `(s)` `(s separator)`
 * [chop](#chop) `(s)`
+* [slice](#sclie) `(slice s index)` `(slice s index length)`
 
 ### Predicates
 
@@ -51,6 +52,20 @@ in upper case and all others in lower case.  ## License
 #### invert-case `(s)`
 
 Change lower case characters to upper case and vice versa.
+
+### slice  `(slice s index)` `(slice s index length)`
+
+Return a slice of s beginning at index and of the given length.
+
+If index is negative the starting index is relative to the end of the string.
+
+The default length of the slice is 1.
+
+If the requested slice ends outside the string boundaries, we return
+the substring of s starting at index.
+
+Returns nil if index falls outside the string boundaries or if
+length is negative.
 
 ## License
 

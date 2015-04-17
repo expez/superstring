@@ -2,6 +2,8 @@
   (:require clojure.string)
   (:refer-clojure :exclude [reverse replace]))
 
+(declare slice)
+
 ;; Taken from [jackknife "0.1.6"]
 (defmacro defalias
   "Defines an alias for a var: a new var with the same root binding (if
@@ -29,6 +31,36 @@
           (vals (ns-publics namespace)))))
 
 (alias-ns clojure.string)
+
+(defn- ^String slice-relative-to-end
+  [^String s ^long index ^long length]
+  (if (neg? (+ (.length s) index)) ; slice outside beg of s
+    nil
+    (slice s (+ (.length s) index) length)))
+
+(defn ^String slice
+  "Return a slice of s beginning at index and of the given length.
+
+  If index is negative the starting index is relative to the end of the string.
+
+  The default length of the slice is 1.
+
+  If the requested slice ends outside the string boundaries, we return
+  the substring of s starting at index.
+
+  Returns nil if index falls outside the string boundaries or if
+  length is negative."
+  ([^String s ^long index]
+   (slice s index 1))
+  ([^String s ^long index ^long length]
+   (cond
+     (neg? length) nil
+     (neg? (+ (.length s) index)) nil ; slice relative to end falls outside s
+     (neg? index) (slice-relative-to-end s index length)
+     (>= index (.length s)) nil
+     (> (- length index) (.length (.substring s index))) (.substring s index)
+     :else (let [end (+ index length)]
+             (.substring s index end)))))
 
 (defn ^String ends-with?
   "Return s if s ends with suffix."

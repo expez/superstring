@@ -4,7 +4,8 @@
              [clojure-test :refer [defspec]]
              [generators :as gen]
              [properties :as prop]]
-            [str.core :as str]))
+            [str.core :as str])
+  (:import java.util.Random))
 
 (defspec appending-separator-and-chomping-does-not-alter-length 100
   (prop/for-all [s gen/string
@@ -112,3 +113,51 @@
     (let [cases1 (map case-to-int s)
           cases2 (map case-to-int (str/invert-case s))]
       (apply = 0 (map + cases1 cases2)))))
+
+(defspec slice-without-end-has-length-1 100
+  (prop/for-all [vals (gen/bind (gen/not-empty gen/string)
+                                (fn [s]
+                                  (gen/tuple (gen/return s)
+                                             (gen/such-that #(< % (.length s))
+                                                            gen/int 100))))]
+    (let [s (first vals)
+          i (second vals)]
+      (= (.length (str/slice s 0)) 1))))
+
+(defspec slice-with-length-outside-string 100
+  ;; When beg + end falls outside the string we return the rest of the
+  ;; string starting from beg
+  (prop/for-all [s (gen/not-empty gen/string)]
+    (let [beg (rand-int (.length s))]
+      (= (str/slice s beg (+ (.length s) beg)) (.substring s beg)))))
+
+(defspec slices-with-index-outside-str-is-nil 100
+  (prop/for-all [vals (gen/bind (gen/not-empty gen/string)
+                                (fn [s]
+                                  (gen/tuple
+                                   (gen/return s)
+                                   (gen/such-that #(> (Math/abs %) (.length s))
+                                                  gen/int 100))))]
+    (let [s (first vals)
+          index (second vals)
+          len (inc (rand-int (dec (.length s))))]
+      (nil? (str/slice s index len)))))
+
+(defspec slices-with-negative-lengths-are-nil 100
+  (prop/for-all [len (gen/such-that #(not (zero? %)) gen/neg-int)
+                 s gen/string
+                 index gen/int]
+    (nil? (str/slice s index len))))
+
+(deftest slice-some-strings
+  (are [expected actual] (= expected actual)
+    nil (str/slice "" 0)
+    nil (str/slice "" 1)
+    nil (str/slice "12" 1 -1)
+    "1" (str/slice "1" 0)
+    "2" (str/slice "12" 1)
+    "12" (str/slice "12" 0 2)
+    "3456" (str/slice "0123456" 3 100)
+    "6" (str/slice "0123456" -1)
+    "45" (str/slice "0123456" -3 2)
+    "456" (str/slice "0123456" -3 100)))

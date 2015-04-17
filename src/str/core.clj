@@ -205,3 +205,18 @@
             (ends-with? s suffix ignore-case))
      (.substring s 0 (- (.length s) (.length suffix)))
      s)))
+
+(defn ^String chop-prefix
+  "If s starts with with prefix return a new string without the prefix.
+
+  Otherwise return s."
+  ([^String s ^String prefix]
+   (chop-prefix s prefix false))
+  ([^String s ^String prefix ignore-case]
+   {:pre [(not (nil? s))
+          (not (nil? prefix))]
+    :post [(not (nil? %))]}
+   (if (and (>= (.length s) (.length prefix))
+            (starts-with? s prefix ignore-case))
+     (.substring s (.length prefix))
+     s)))

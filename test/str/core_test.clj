@@ -237,3 +237,17 @@
     "" (str/chop-suffix "foo" "FOO" :ignore-case)
     "fo" (str/chop-suffix "foo" "O" :ignore-case)
     "foo" (str/chop-suffix "fooÅ" "å" :ignore-case)))
+
+(deftest chop-prefix
+  (are [expected actual] (= expected actual)
+    "" (str/chop-prefix "" "foo")
+    "" (str/chop-prefix "foo" "foo")
+    "bar"(str/chop-prefix "foobar" "foo")
+    "foo" (str/chop-prefix " foo" " ")
+    "foo" (str/chop-prefix "foo" "bar")
+    "foo" (str/chop-prefix "foo" "FOO")
+    "foo" (str/chop-prefix "foo" "F")
+    "Åfoo" (str/chop-prefix "Åfoo" "å")
+    "" (str/chop-prefix "foo" "FOO" :ignore-case)
+    "oo" (str/chop-prefix "foo" "F" :ignore-case)
+    "foo" (str/chop-prefix "Åfoo" "Å" :ignore-case)))

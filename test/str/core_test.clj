@@ -102,6 +102,14 @@
     (reduce lower-case-ascii-if-letter?
             (.substring (str/capitalize (str c s)) 1))))
 
+(deftest capitalize
+  (are [expected actual] (= expected actual)
+    "Foo" (str/capitalize "foo" )
+    "Foo" (str/capitalize "FOO")
+    "Foo" (str/capitalize "FoO")
+    "Foo" (str/capitalize "FoO")
+    "Foo." (str/capitalize "FoO.")))
+
 (defspec invert-case-does-not-change-length 100
   (prop/for-all [s gen/string]
     (= (.length (str/swap-case s)) (.length s))))

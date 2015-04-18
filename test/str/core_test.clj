@@ -110,7 +110,7 @@
     "Foo" (str/capitalize "FoO")
     "Foo." (str/capitalize "FoO.")))
 
-(defspec invert-case-does-not-change-length 100
+(defspec swap-case-does-not-change-length 100
   (prop/for-all [s gen/string]
     (= (.length (str/swap-case s)) (.length s))))
 
@@ -126,11 +126,18 @@
       (if (Character/isUpperCase c) -1 1)
       0)))
 
-(defspec invert-case-changes-case 100
+(defspec swap-case-changes-case 100
   (prop/for-all [s gen/string]
     (let [cases1 (map case-to-int s)
           cases2 (map case-to-int (str/swap-case s))]
       (apply = 0 (map + cases1 cases2)))))
+
+(deftest swap-case
+  (are [expected actual] (= expected actual)
+    "Foo" (str/swap-case "fOO" )
+    "foo" (str/swap-case "FOO")
+    "åÅBERG" (str/swap-case "Ååberg")
+    "æÆå." (str/swap-case "ÆæÅ.")))
 
 (defspec slice-without-end-has-length-1 100
   (prop/for-all [vals (gen/bind (gen/not-empty gen/string)

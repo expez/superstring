@@ -2,70 +2,17 @@
 
 Clojure string library
 
-## Usage
+## Installation
 
-### To shorter string
+Add the following dependency to your `project.clj` file:
 
-* [chomp](#chomp) `(s)` `(s separator)`
-* [chop](#chop) `(s)`
-* [slice](#sclie) `(slice s index)` `(slice s index length)`
+```clj
+[str "1.0.0"]
+```
 
-### Predicates
+## Documentation
 
-* [ends-with?](#ends-with?) `(s suffix)`
-* [starts-with?](#starts-with?) `(s prefix)` `(s prefix ignore-case)`
-
-### Misc
-
-* [capitalize](#capitalize) `(s)`
-* [invert-case](#invert-case) `(s)`
-
-#### chomp `(s)` `(s separator)`
-
-Return a new string with the given record separator removed from the end of the string (if present).
-
-Separator defaults to line.separator.
-
-#### chop `(s)`
-
-Return a new string with the last character removed. If the string
-ends with \\r\\n, both characters are removed. Applying chop to an
-empty string is a no-op.
-
-#### starts-with? `(s prefix)`
-
-Returns `s` if `s` starts with `prefix`.
-
-If a third argument is provided the string comparison is insensitive to case.
-
-#### ends-with? `(s suffix)` `(s suffix ignore-case)`
-
-Returns `s` if `s` ends with `suffix`.
-
-If a third argument is provided the string comparison is insensitive to case.
-
-#### capitalize `(s)`
-
-Return a new string where the first character is
-in upper case and all others in lower case.  ## License
-
-#### invert-case `(s)`
-
-Change lower case characters to upper case and vice versa.
-
-### slice  `(slice s index)` `(slice s index length)`
-
-Return a slice of s beginning at index and of the given length.
-
-If index is negative the starting index is relative to the end of the string.
-
-The default length of the slice is 1.
-
-If the requested slice ends outside the string boundaries, we return
-the substring of s starting at index.
-
-Returns nil if index falls outside the string boundaries or if
-length is negative.
+[API Docs](http://expez.github.io/str/doc/str.core.html)
 
 ## License
 

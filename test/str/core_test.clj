@@ -36,6 +36,16 @@
   (prop/for-all [s gen/string]
     (= (.length (str/chomp (str s "\r\n"))) (.length s))))
 
+(deftest chomp
+  (are [expected actual] (= expected actual)
+    "" (str/chomp "" "")
+    "" (str/chomp "foo" "foo")
+    "foo"(str/chomp "foobar" "bar")
+    "foo" (str/chomp "foo\n")
+    "foo" (str/chomp "foo\r")
+    "foo" (str/chomp "foo\r\n")
+    "foo\n" (str/chomp "foo\n\r")))
+
 (defspec ends-with?-acts-like-endsWith 100
   (prop/for-all [s gen/string
                  suffix gen/string]

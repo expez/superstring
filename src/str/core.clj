@@ -220,3 +220,31 @@
             (starts-with? s prefix ignore-case))
      (.substring s (.length prefix))
      s)))
+
+(defn- ^String case-sensitive-contains
+  [^String s ^String needle]
+  (if (= needle "")
+    s
+    (when (and (seq s) (seq needle) (.contains s needle))
+      s)))
+
+(defn- case-insensitive-contains
+  [^String s ^String needle]
+  (if (= needle "")
+    s
+    (when (and (seq s) (seq needle))
+      (let [p (java.util.regex.Pattern/compile
+               (java.util.regex.Pattern/quote needle)
+               (bit-or java.util.regex.Pattern/CASE_INSENSITIVE
+                       java.util.regex.Pattern/UNICODE_CASE))]
+        (when (re-find p s)
+          s)))))
+
+(defn ^String contains?
+  "Retuns s if s contains needle."
+  ([^String s ^String needle]
+   (case-sensitive-contains s needle))
+  ([^String s ^String needle ignore-case]
+   (if ignore-case
+     (case-insensitive-contains s needle)
+     (case-sensitive-contains s needle))))

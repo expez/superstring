@@ -276,3 +276,37 @@
     "" (str/chop-prefix "foo" "FOO" :ignore-case)
     "oo" (str/chop-prefix "foo" "F" :ignore-case)
     "foo" (str/chop-prefix "Åfoo" "Å" :ignore-case)))
+
+(deftest contains?
+  (are [expected actual] (= expected actual)
+    "" (str/contains? "" "")
+    nil (str/contains? "" nil)
+    nil (str/contains? nil "")
+    "1" (str/contains? "1" "1")
+    "foo" (str/contains? "foo" "fo")
+    nil (str/contains? "foobar" "qux")
+    nil (str/contains? "foobar" "BAR")
+    "foobar" (str/contains? "foobar" "BAR" :ignore-case)
+    "Albert Åberg"(str/contains? "Albert Åberg" "åberg" :ignore-case)))
+
+(defspec contains?-finds-generated-strings 100
+  (prop/for-all [before gen/string
+                 needle (gen/not-empty gen/string)
+                 after gen/string]
+    (str/contains? (str before needle after) needle)))
+
+(defn- randomly-swapcase
+  [s]
+  (let [swapcase (fn [c]
+                   (if (Character/isUpperCase c)
+                     (Character/toLowerCase c)
+                     (if (Character/isLowerCase c)
+                       (Character/toUpperCase c)
+                       c)))]
+    (apply str (map #(if (> (rand-int 3) 1) (swapcase %) %) s))))
+
+(defspec contains?-can-ignore-case 100
+  (prop/for-all [before gen/string
+                 needle (gen/fmap randomly-swapcase (gen/not-empty gen/string))
+                 after gen/string]
+    (str/contains? (str before needle after) needle :ignore-case)))

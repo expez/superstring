@@ -15,14 +15,12 @@
 
 (defspec chomping-string-not-ending-in-seperator-does-not-alter-length 100
   (prop/for-all
-      [vals (gen/bind (gen/not-empty gen/string)
-                      (fn [sep]
-                        (gen/tuple (gen/return sep)
-                                   (gen/such-that #(not (.endsWith % sep))
-                                                  gen/string))))]
-    (let [sep (first vals)
-          s (second vals)]
-      (= (count (str/chomp s sep)) (count s)))))
+      [[sep s] (gen/bind (gen/not-empty gen/string)
+                         (fn [sep]
+                           (gen/tuple (gen/return sep)
+                                      (gen/such-that #(not (.endsWith % sep))
+                                                     gen/string))))]
+    (= (count (str/chomp s sep)) (count s))))
 
 (defspec chomp-removes-newline 100
   (prop/for-all [s gen/string]
@@ -140,14 +138,12 @@
     "æÆå." (str/swap-case "ÆæÅ.")))
 
 (defspec slice-without-end-has-length-1 100
-  (prop/for-all [vals (gen/bind (gen/not-empty gen/string)
-                                (fn [s]
-                                  (gen/tuple (gen/return s)
-                                             (gen/such-that #(< % (.length s))
-                                                            gen/int 100))))]
-    (let [s (first vals)
-          i (second vals)]
-      (= (.length (str/slice s 0)) 1))))
+  (prop/for-all [[s i] (gen/bind (gen/not-empty gen/string)
+                                 (fn [s]
+                                   (gen/tuple (gen/return s)
+                                              (gen/such-that #(< % (.length s))
+                                                             gen/int 100))))]
+    (= (.length (str/slice s 0)) 1)))
 
 (defspec slice-with-length-outside-string 100
   ;; When beg + end falls outside the string we return the rest of the
@@ -157,15 +153,13 @@
       (= (str/slice s beg (+ (.length s) beg)) (.substring s beg)))))
 
 (defspec slices-with-index-outside-str-is-nil 100
-  (prop/for-all [vals (gen/bind (gen/not-empty gen/string)
-                                (fn [s]
-                                  (gen/tuple
-                                   (gen/return s)
-                                   (gen/such-that #(> (Math/abs %) (.length s))
-                                                  gen/int 100))))]
-    (let [s (first vals)
-          index (second vals)
-          len (inc (rand-int (dec (.length s))))]
+  (prop/for-all [[s index] (gen/bind (gen/not-empty gen/string)
+                                     (fn [s]
+                                       (gen/tuple
+                                        (gen/return s)
+                                        (gen/such-that #(> (Math/abs %) (.length s))
+                                                       gen/int 100))))]
+    (let [len (inc (rand-int (dec (.length s))))]
       (nil? (str/slice s index len)))))
 
 (defspec slices-with-negative-lengths-are-nil 100
@@ -218,14 +212,12 @@
 
 (defspec left-pad-results-in-strings-with-new-width 100
   (prop/for-all
-      [vals
+      [[s width]
        (gen/bind gen/string
                  (fn [s]
                    (gen/tuple (gen/return s)
                               (gen/such-that #(> % (.length s)) gen/pos-int 100))))]
-    (let [s (first vals)
-          width (second vals)]
-      (= (.length (str/pad-left s width)) width))))
+    (= (.length (str/pad-left s width)) width)))
 
 (deftest center
   (are [expected actual] (= expected actual)
@@ -240,14 +232,12 @@
 
 (defspec center-results-in-strings-with-new-width 100
   (prop/for-all
-      [vals
+      [[s width]
        (gen/bind gen/string
                  (fn [s]
                    (gen/tuple (gen/return s)
                               (gen/such-that #(> % (.length s)) gen/pos-int 100))))]
-    (let [s (first vals)
-          width (second vals)]
-      (= (.length (str/center s width)) width))))
+    (= (.length (str/center s width)) width)))
 
 (deftest chop-suffix
   (are [expected actual] (= expected actual)

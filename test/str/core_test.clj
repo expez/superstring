@@ -322,7 +322,7 @@
     (str/contains-all? (str s1 s2 s3) [s1 s2 s3])))
 
 (defspec truncated-strings-have-right-length 100
-  (prop/for-all [[s len] (gen/bind (gen/such-that #(> (.length %) 3) gen/string)
+  (prop/for-all [[s len] (gen/bind (gen/such-that #(> (.length %) 3) gen/string 100)
                                    (fn [s]
                                      (gen/tuple
                                       (gen/return s)
@@ -337,3 +337,18 @@
     "1" (str/truncate "1" 3)
     "12" (str/truncate "12" 3)
     "123" (str/truncate "123" 3)))
+
+(deftest common-prefix
+  (are [expected actual] (= expected actual)
+    "" (str/common-prefix "321" "123")
+    "Åffø" (str/common-prefix "Åffø123456" "Åfføo8yuidfg")
+    "123" (str/common-prefix "123456" "123o8yuidfg")
+    "" (str/common-prefix "Åberg" "åberg")
+    "Åberg" (str/common-prefix "åberg" "Åberg" :ignore-case)
+    "åberg" (str/common-prefix "Åberg" "åberg" :ignore-case)))
+
+(defspec common-prefix-finds-common-prefixes 100
+  (prop/for-all [prefix (gen/not-empty gen/string)
+                 s1 gen/string
+                 s2 gen/string]
+    (.startsWith (str/common-prefix (str prefix s1) (str prefix s2)) prefix)))

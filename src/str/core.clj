@@ -273,3 +273,26 @@
   (if (> (.length s) (max 3 (- len 3)))
     (str (.substring s 0 (- len 3)) "...")
     s))
+
+(defn ^String common-prefix
+  "Return the longest common prefix of s1 and s2"
+  ([^String s1 ^String s2]
+   {:pre [(string? s1) (string? s2)]
+    :post [(string? %)]}
+   (->> s1
+        (map #(when (= %1 %2) %1) s2)
+        (take-while (complement nil?))
+        (apply str)))
+  ([^String s1 ^String s2 ignore-case]
+   {:pre [(string? s1) (string? s2)]
+    :post [(string? %)]}
+   (if-not ignore-case
+     (common-prefix s1 s2)
+     (->> s1
+          (map #(when (or (= %1 %2)
+                          (= (Character/toUpperCase %1) %2)
+                          (= (Character/toLowerCase %1) %2))
+                  %1)
+               s2)
+          (take-while (complement nil?))
+          (apply str)))))

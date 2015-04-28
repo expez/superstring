@@ -248,3 +248,20 @@
    (if ignore-case
      (case-insensitive-contains s needle)
      (case-sensitive-contains s needle))))
+
+(defn ^String contains-all?
+  "Return s if s contains all needles."
+  ([^String s needles]
+   (loop [needles needles]
+     (if (seq needles)
+       (when (case-sensitive-contains s (first needles))
+         (recur (rest needles)))
+       s)))
+  ([^String s needles ignore-case]
+   (if ignore-case
+     (loop [needles needles]
+       (if (seq needles)
+         (when (case-insensitive-contains s (first needles))
+           (recur (rest needles)))
+         s))
+     (contains-all? s needles))))

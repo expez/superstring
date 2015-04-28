@@ -300,3 +300,23 @@
                  needle (gen/fmap randomly-swapcase (gen/not-empty gen/string))
                  after gen/string]
     (str/contains? (str before needle after) needle :ignore-case)))
+
+(deftest contains-all?
+  (are [expected actual] (= expected actual)
+    "" (str/contains-all? "" [])
+    "" (str/contains-all? "" [""])
+    nil (str/contains-all? "" [nil])
+    nil (str/contains-all? nil [""])
+    "12" (str/contains-all? "12" ["1" "2"])
+    "foo" (str/contains-all? "foo" ["fo" "o"])
+    nil (str/contains-all? "foobar" ["qux"])
+    nil (str/contains-all? "foobar" ["foo" "qux"])
+    nil (str/contains-all? "foobar" ["BAR"])
+    "foobar" (str/contains-all? "foobar" ["BAR" "Foo"] :ignore-case)
+    "Albert Åberg"(str/contains-all? "Albert Åberg" ["åberg" "al"] :ignore-case)))
+
+(defspec contains-all? 100
+  (prop/for-all [s1 gen/string
+                 s2 gen/string
+                 s3 gen/string]
+    (str/contains-all? (str s1 s2 s3) [s1 s2 s3])))

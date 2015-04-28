@@ -320,3 +320,20 @@
                  s2 gen/string
                  s3 gen/string]
     (str/contains-all? (str s1 s2 s3) [s1 s2 s3])))
+
+(defspec truncated-strings-have-right-length 100
+  (prop/for-all [[s len] (gen/bind (gen/such-that #(> (.length %) 3) gen/string)
+                                   (fn [s]
+                                     (gen/tuple
+                                      (gen/return s)
+                                      (gen/choose 3 (max 4 (- (.length s) 3)) ))))]
+    (= (.length (str/truncate s len)) (min (.length s) len))))
+
+(deftest truncate
+  (are [expected actual] (= expected actual)
+    "" (str/truncate "" 3)
+    "..." (str/truncate "123456" 3)
+    "123..." (str/truncate "123456" 6)
+    "1" (str/truncate "1" 3)
+    "12" (str/truncate "12" 3)
+    "123" (str/truncate "123" 3)))

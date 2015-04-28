@@ -265,3 +265,11 @@
            (recur (rest needles)))
          s))
      (contains-all? s needles))))
+
+(defn ^String truncate
+  "If s is longer than len-3, cut it down to len-3 and append '...'"
+  [^String s len]
+  {:pre [(not (nil? s)) (>= len 3)]}
+  (if (> (.length s) (max 3 (- len 3)))
+    (str (.substring s 0 (- len 3)) "...")
+    s))

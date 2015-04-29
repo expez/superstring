@@ -7,4 +7,5 @@
   :plugins [[codox "0.8.11"]]
   :codox {:src-dir-uri "http://github.com/expez/str/blob/master/"
           :src-linenum-anchor-prefix "L"}
-  :profiles {:dev {:dependencies [[org.clojure/test.check "0.7.0"]]}})
+  :profiles {:dev {:dependencies [[org.clojure/test.check "0.7.0"]]
+                   :repl-options {:init-ns str.core}}})

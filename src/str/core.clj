@@ -296,3 +296,30 @@
                s2)
           (take-while (complement nil?))
           (apply str)))))
+
+(defn ^String common-suffix
+  "Return the longest common suffix of s1 and s2"
+  ([^String s1 ^String s2]
+   {:pre [(string? s1) (string? s2)]
+    :post [(string? %)]}
+   (->> s1
+        reverse
+        (map #(when (= %1 %2) %1) (reverse s2))
+        (take-while (complement nil?))
+        (apply str)
+        reverse))
+  ([^String s1 ^String s2 ignore-case]
+   {:pre [(string? s1) (string? s2)]
+    :post [(string? %)]}
+   (if-not ignore-case
+     (common-suffix s1 s2)
+     (->> s1
+          reverse
+          (map #(when (or (= %1 %2)
+                          (= (Character/toUpperCase %1) %2)
+                          (= (Character/toLowerCase %1) %2))
+                  %1)
+               (reverse s2))
+          (take-while (complement nil?))
+          (apply str)
+          reverse))))

@@ -352,3 +352,19 @@
                  s1 gen/string
                  s2 gen/string]
     (.startsWith (str/common-prefix (str prefix s1) (str prefix s2)) prefix)))
+
+
+(deftest common-suffix
+  (are [expected actual] (= expected actual)
+    "" (str/common-suffix "321" "123")
+    "Åffø" (str/common-suffix "123456Åffø" "o8yuidfgÅffø")
+    "123" (str/common-suffix "456123" "o8yuidfg123")
+    "" (str/common-suffix "åberG" "åberg")
+    "åberG" (str/common-suffix "åberg" "åberG" :ignore-case)
+    "åberg" (str/common-suffix "Åberg" "åberg" :ignore-case)))
+
+(defspec common-suffix-finds-common-suffixes 100
+  (prop/for-all [suffix (gen/not-empty gen/string)
+                 s1 gen/string
+                 s2 gen/string]
+    (.endsWith (str/common-suffix (str s1 suffix) (str s2 suffix)) suffix)))

@@ -323,3 +323,15 @@
           (take-while (complement nil?))
           (apply str)
           reverse))))
+
+(defn- upper-exists?
+  "Does c exist in an upper case version?"
+  [^Character c]
+  (or (Character/isUpperCase c) (not= c (Character/toUpperCase c))))
+
+(defn ^String title-case
+  "Capitalize the first character of s and lower case the rest."
+  [^String s]
+  (let [first-char (first s)
+        start (if (upper-exists? first-char) (upper-case first-char) first-char)]
+    (str start (lower-case (.substring s 1)))))

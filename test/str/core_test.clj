@@ -267,7 +267,7 @@
     "oo" (str/chop-prefix "foo" "F" :ignore-case)
     "foo" (str/chop-prefix "Åfoo" "Å" :ignore-case)))
 
-(deftest contains?
+(deftest contains-test?
   (are [expected actual] (= expected actual)
     "" (str/contains? "" "")
     nil (str/contains? "" nil)
@@ -368,3 +368,22 @@
                  s1 gen/string
                  s2 gen/string]
     (.endsWith (str/common-suffix (str s1 suffix) (str s2 suffix)) suffix)))
+
+(defn upper-if-upper-exists?
+  "Is c uppercase for those characters which have an upper case version?"
+  [^Character c]
+  (or (Character/isUpperCase c) (= c (Character/toUpperCase c))))
+
+(defn lower-if-lower-exists?
+  "Is c lower for those characters which have an lower case version?"
+  [^Character c]
+  (or (Character/isLowerCase c) (= c (Character/toLowerCase c))))
+
+(defspec title-case-starts-with-upper 100
+  (prop/for-all [s (gen/not-empty gen/string)]
+    (is (upper-if-upper-exists? (first (str/title-case s))))))
+
+(defspec title-case-rest-is-all-lower-case 100
+  (prop/for-all [s (gen/not-empty gen/string)]
+    (is (reduce (fn [acc c] (and acc (lower-if-lower-exists? c))) true
+                (rest (str/title-case s))))))

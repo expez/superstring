@@ -16,7 +16,7 @@ Add the following dependency to your `project.clj` file:
 
 ## Raison d'être
 
-This is a convenience library.  There's nothing in here that you haven't written at least once before, but your time as valuable and you shouldn't have to do it again.
+This is a convenience library.  There's nothing in here that you haven't written at least once before, but your time is valuable and you shouldn't have to do it again.
 
 It's also annoying to pull in `$library` as well as `clojure.string`
 to get complete coverage.  Or pull in `$library` where the functions in `clojure.string` are renamed, or re-implemented with slightly different semantics.  I've opted to alias all the vars in

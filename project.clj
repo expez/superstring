@@ -9,4 +9,7 @@
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.6.0"]
                                   [org.clojure/test.check "0.7.0"]]
                    :repl-options {:init-ns str.core}}
-             :provided {:dependencies [[org.clojure/clojure "1.6.0"]]}})
+             :provided {:dependencies [[org.clojure/clojure "1.6.0"]]}
+             :1.5 {:dependencies [[org.clojure/clojure "1.5.1"]]}
+             :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}
+             :1.7 {:dependencies [[org.clojure/clojure "1.7.0-beta3"]]}})

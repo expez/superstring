@@ -332,6 +332,8 @@
 (defn ^String title-case
   "Capitalize the first character of s and lower case the rest."
   [^String s]
+  {:pre [(string? s)]
+   :post [(string? %)]}
   (let [first-char (first s)
         start (if (upper-exists? first-char) (upper-case first-char) first-char)]
     (str start (lower-case (.substring s 1)))))

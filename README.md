@@ -1,4 +1,4 @@
-# str
+# str [![Build Status](https://travis-ci.org/xsc/lein-ancient.svg?branch=master)](https://travis-ci.org/expez/str)
 
 Clojure string library
 

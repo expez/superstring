@@ -387,3 +387,17 @@
   (prop/for-all [s (gen/not-empty gen/string)]
     (is (reduce (fn [acc c] (and acc (lower-if-lower-exists? c))) true
                 (rest (str/title-case s))))))
+
+(defspec upper-case?-returns-true-on-all-upper 100
+  (prop/for-all [s (gen/not-empty gen/string)]
+    (is (str/upper-case? (str/upper-case s)))))
+
+(defspec upper-case?-returns-nil-on-all-lower 100
+  (prop/for-all [s (gen/such-that not-empty
+                                  (gen/fmap str/join (gen/vector gen/char-alpha)))]
+    (is (not (str/upper-case? (str/lower-case s))))))
+
+(deftest upper-case-test
+  (are [expected actual] (= expected actual)
+    "UPPER" (str/upper-case? "UPPER")
+    "123UPPER!" (str/upper-case? "123UPPER!")))

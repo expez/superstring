@@ -337,3 +337,17 @@
   (let [first-char (first s)
         start (if (upper-exists? first-char) (upper-case first-char) first-char)]
     (str start (lower-case (.substring s 1)))))
+
+(defn upper-case?
+  "Return s if s is all upper-case.
+
+  Characters without case, e.g. numbers, are considered to be trivially
+  true."
+  [^String s]
+  {:pre [(string? s)]
+   :post [(or (nil? %) (string? %))]}
+  (when (reduce
+         (fn [acc c]
+           (and acc (or (Character/isUpperCase c) (= c (Character/toUpperCase c)))))
+         true s)
+    s))

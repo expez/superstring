@@ -241,7 +241,7 @@
           s)))))
 
 (defn ^String contains?
-  "Retuns s if s contains needle."
+  "Return s if s contains needle."
   ([^String s ^String needle]
    (case-sensitive-contains s needle))
   ([^String s ^String needle ignore-case]

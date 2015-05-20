@@ -401,3 +401,17 @@
   (are [expected actual] (= expected actual)
     "UPPER" (str/upper-case? "UPPER")
     "123UPPER!" (str/upper-case? "123UPPER!")))
+
+(defspec lower-case?-returns-true-on-all-lower 100
+  (prop/for-all [s (gen/not-empty gen/string)]
+    (is (str/lower-case? (str/lower-case s)))))
+
+(defspec lower-case?-returns-nil-on-all-upper 100
+  (prop/for-all [s (gen/such-that not-empty
+                                  (gen/fmap str/join (gen/vector gen/char-alpha)))]
+    (is (not (str/lower-case? (str/upper-case s))))))
+
+(deftest lower-case-test
+  (are [expected actual] (= expected actual)
+    "upper" (str/lower-case? "upper")
+    "123upper!" (str/lower-case? "123upper!")))

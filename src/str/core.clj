@@ -339,7 +339,7 @@
     (str start (lower-case (.substring s 1)))))
 
 (defn upper-case?
-  "Return s if s is all upper-case.
+  "Return s if s is all upper case.
 
   Characters without case, e.g. numbers, are considered to be trivially
   true."
@@ -349,5 +349,19 @@
   (when (reduce
          (fn [acc c]
            (and acc (or (Character/isUpperCase c) (= c (Character/toUpperCase c)))))
+         true s)
+    s))
+
+(defn lower-case?
+  "Return s if s is all lower case.
+
+  Characters without case, e.g. numbers, are considered to be trivially
+  true."
+  [^String s]
+  {:pre [(string? s)]
+   :post [(or (nil? %) (string? %))]}
+  (when (reduce
+         (fn [acc c]
+           (and acc (or (Character/isLowerCase c) (= c (Character/toLowerCase c)))))
          true s)
     s))

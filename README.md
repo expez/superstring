@@ -27,7 +27,8 @@ A ton of functions, either on `String`, or elsewhere, return `true` as the truth
 ```clj
 (some-> linked-in-profile
         (str/contains? "developer" :ignore-case)
-        (str/any? ["ninja" "rockstar"] :ignore-case)
+        (str/contains-all? ["java" "xml"] :ignore-case)
+        (str/contains-any? ["ninja" "rockstar"] :ignore-case)
         extract-contact-info
         send-random-job-offer)
 ```

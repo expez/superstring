@@ -266,6 +266,23 @@
          s))
      (contains-all? s needles))))
 
+(defn ^String contains-any?
+  "Return s if s contains any of the needles."
+  ([^String s needles]
+   (loop [needles needles]
+     (when (seq needles)
+       (if (case-sensitive-contains s (first needles))
+         s
+         (recur (rest needles))))))
+  ([^String s needles ignore-case]
+   (if ignore-case
+     (loop [needles needles]
+       (when (seq needles)
+         (if (case-insensitive-contains s (first needles))
+           s
+           (recur (rest needles)))))
+     (contains-any? s needles))))
+
 (defn ^String truncate
   "If s is longer than len-3, cut it down to len-3 and append '...'"
   [^String s len]

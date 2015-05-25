@@ -321,6 +321,21 @@
                  s3 gen/string]
     (str/contains-all? (str s1 s2 s3) [s1 s2 s3])))
 
+(defspec contains-any-finds-a-needle 100
+  (prop/for-all [before (gen/not-empty gen/string)
+                 needle (gen/not-empty gen/string)
+                 after (gen/not-empty gen/string)]
+    (is (str/contains-any? (str before needle after) [needle]))))
+
+(defspec contains-any-can-ignore-case 100
+  (prop/for-all [before (gen/not-empty gen/string)
+                 needle (gen/not-empty gen/string)
+                 after (gen/not-empty gen/string)]
+    (-> before
+        (str (randomly-swapcase needle) after)
+        (str/contains-any? [needle] :ignore-case)
+        is)))
+
 (defspec truncated-strings-have-right-length 100
   (prop/for-all [[s len] (gen/bind (gen/such-that #(> (.length %) 3) gen/string 100)
                                    (fn [s]

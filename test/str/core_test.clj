@@ -426,6 +426,24 @@
                                   (gen/fmap str/join (gen/vector gen/char-alpha)))]
     (is (not (str/lower-case? (str/upper-case s))))))
 
+(defn- word []
+  (gen/fmap #(if (< (.length %) 10)
+               % (.substring % 0 (rand-int (.length %))))
+            (gen/not-empty gen/string-alphanumeric)))
+
+(defn- less-than-width-or-unbreakable [line width]
+  (or (<= (.length line) width)
+      (not (re-find #" " line))))
+
+(defspec wrap-words-have-lines-no-longer-than-max-width 100
+  (prop/for-all [words (gen/bind (gen/choose 50 1000)
+                                 #(gen/return (gen/sample (word) %)))
+                 width (gen/choose 8 80)]
+    (is (reduce (fn [acc line]
+                  (and acc (less-than-width-or-unbreakable line width)))
+                true
+                (str/split-lines (str/wrap-words (str/join " " words) width))))))
+
 (deftest lower-case-test
   (are [expected actual] (= expected actual)
     "upper" (str/lower-case? "upper")

@@ -424,3 +424,15 @@
   {:pre [(string? s)]
    :post [(or (nil? %) (string? %))]}
   (join "-" (map lower-case (split-words s))))
+
+(defn ^String camel-case
+  "Lower case first char in s and use capitalization to separate words.
+
+  foo bar => fooBar
+  camelCase => camelCase
+  PascalCase => pascalCase"
+  [^String s]
+  {:pre [(string? s)]
+   :post [(or (nil? %) (string? %))]}
+  (let [words (split-words s)]
+    (join ""  (conj (map capitalize (rest words)) (lower-case (first words))))))

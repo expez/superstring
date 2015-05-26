@@ -461,3 +461,11 @@
     "http-request" (str/lisp-case "HTTPRequest")
     "snake-case" (str/lisp-case "snake_case")
     "screaming-snake-case" (str/lisp-case "SCREAMING_SNAKE_CASE")))
+
+(deftest camel-case-test
+  (are [expected actual] (= expected actual)
+    "pascalCase" (str/camel-case "PascalCase")
+    "setId" (str/camel-case "setID")
+    "httpRequest" (str/camel-case "HTTPRequest")
+    "snakeCase" (str/camel-case "snake_case")
+    "screamingSnakeCase" (str/camel-case "SCREAMING_SNAKE_CASE")))

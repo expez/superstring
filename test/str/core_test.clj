@@ -448,3 +448,16 @@
   (are [expected actual] (= expected actual)
     "upper" (str/lower-case? "upper")
     "123upper!" (str/lower-case? "123upper!")))
+
+(defspec lisp-case-is-all-lower 100
+  (prop/for-all [s (gen/not-empty gen/string)]
+    (is (reduce (fn [acc c] (and acc (lower-if-lower-exists? c))) true
+                (str/lisp-case s)))))
+
+(deftest lisp-case-test
+  (are [expected actual] (= expected actual)
+    "pascal-case" (str/lisp-case "PascalCase")
+    "set-id" (str/lisp-case "setID")
+    "http-request" (str/lisp-case "HTTPRequest")
+    "snake-case" (str/lisp-case "snake_case")
+    "screaming-snake-case" (str/lisp-case "SCREAMING_SNAKE_CASE")))

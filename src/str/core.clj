@@ -401,3 +401,26 @@
             (recur (.append out (str "\n" (first remaining-words))) (rest remaining-words) width))
 
         :else (recur (.append out "\n") remaining-words 0)))))
+
+(defn- split-words [^String s]
+  (remove empty?
+          (-> s
+              (replace #"_|-" " ")
+              (replace #"(\p{javaUpperCase})((\p{javaUpperCase})[(\p{javaLowerCase})0-9])"
+                       "$1 $2")
+              (replace
+               #"(\p{javaLowerCase})(\p{javaUpperCase})" "$1 $2")
+              (split
+               #"[^\w0-9]+"))))
+
+(defn ^String lisp-case
+  "Lower case s and separate words with dashes.
+
+  foo bar => foo-bar
+  camelCase => camel-case
+
+  This is also referred to as kebab-case in some circles."
+  [^String s]
+  {:pre [(string? s)]
+   :post [(or (nil? %) (string? %))]}
+  (join "-" (map lower-case (split-words s))))

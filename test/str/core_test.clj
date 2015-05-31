@@ -477,3 +477,11 @@
     "HttpRequest" (str/pascal-case "HTTPRequest")
     "SnakeCase" (str/pascal-case "snake_case")
     "ScreamingSnakeCase" (str/pascal-case "SCREAMING_SNAKE_CASE")))
+
+(deftest snake-case-test
+  (are [expected actual] (= expected actual)
+    "pascal_case" (str/snake-case "PascalCase")
+    "set_id" (str/snake-case "setID")
+    "http_request" (str/snake-case "HTTPRequest")
+    "snake_case" (str/snake-case "snake_case")
+    "screaming_snake_case" (str/snake-case "SCREAMING_SNAKE_CASE")))

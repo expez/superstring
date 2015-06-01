@@ -458,3 +458,14 @@
   {:pre [(string? s)]
    :post [(string? %)]}
   (join "_"  (map lower-case (split-words s))))
+
+(defn ^String screaming-snake-case
+  "Upper case s and use underscores to separate words.
+
+  foo bar => foo_bar
+  camelCase => camel_case
+  PascalCase => pascal_case"
+  [^String s]
+  {:pre [(string? s)]
+   :post [(string? %)]}
+  (join "_"  (map upper-case (split-words s))))

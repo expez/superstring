@@ -485,3 +485,11 @@
     "http_request" (str/snake-case "HTTPRequest")
     "snake_case" (str/snake-case "snake_case")
     "screaming_snake_case" (str/snake-case "SCREAMING_SNAKE_CASE")))
+
+(deftest screaming-snake-case-test
+  (are [expected actual] (= expected actual)
+    "PASCAL_CASE" (str/screaming-snake-case "PascalCase")
+    "SET_ID" (str/screaming-snake-case "setID")
+    "HTTP_REQUEST" (str/screaming-snake-case "HTTPRequest")
+    "SNAKE_CASE" (str/screaming-snake-case "snake_case")
+    "SCREAMING_SNAKE_CASE" (str/screaming-snake-case "SCREAMING_SNAKE_CASE")))

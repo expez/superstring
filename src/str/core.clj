@@ -491,3 +491,21 @@
   (when (reduce (fn [acc c] (and acc (< (int c) 128))) true s)
     s))
 
+(defn ^String slug
+  "Transform s so it's suitable for use in URLs.
+
+  The following transformations are applied:
+
+  * Diacritical marks are removed from all characters.
+  * Any character which isn't alphanumeric or in #{_-.~} is removed.
+  * Lower case
+  * Whitespace is collapsed and replaced by a single dash."
+  [^String s]
+  {:pre [(string? s)]
+   :post [(string? %)]}
+  (-> s
+      (.replaceAll "\\s+" "-")
+      strip-accents
+      (.replaceAll "[^A-ZA-z0-9_.~-]" "")
+      (.replaceAll "-+" "-")
+      lower-case))

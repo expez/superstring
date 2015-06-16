@@ -511,3 +511,24 @@
   (are [expected actual] (= expected actual)
     "ascii" (str/ascii? "ascii")
     nil (str/ascii? "Et ça sera sa moitié")))
+
+(defspec slug-contains-only-ascii-chars 100
+  (prop/for-all [s (gen/not-empty gen/string)]
+    (is (str/ascii? (str/slug s)))))
+
+(defspec slug-contains-no-whitespace 100
+  (prop/for-all [s (gen/not-empty gen/string)]
+    (is (not (re-find #"\s+" (str/slug s))))))
+
+(defspec slug-is-all-lower 100
+  (prop/for-all [s (gen/not-empty gen/string)]
+    (is (str/lower-case? (str/slug s)))))
+
+(defspec slug-only-contains-unreserved-characters 100
+  (prop/for-all [s (gen/not-empty gen/string)]
+    (is (not (re-matches #"[^A-ZA-z0-9_.~-]+" (str/slug s))))))
+
+(deftest slug-test
+  (are [expected actual] (= expected actual)
+    "this-that-the-other-various-outre-considerations"
+    (str/slug "This, That & the Other! Various Outré   Considerations")))

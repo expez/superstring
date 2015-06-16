@@ -1,6 +1,7 @@
 (ns str.core
   (:require clojure.string)
-  (:refer-clojure :exclude [reverse replace contains?]))
+  (:refer-clojure :exclude [reverse replace contains?])
+  (:import java.text.Normalizer))
 
 (declare slice)
 
@@ -469,3 +470,14 @@
   {:pre [(string? s)]
    :post [(string? %)]}
   (join "_"  (map upper-case (split-words s))))
+
+(defn ^String strip-accents
+  "Strip all accents (diacritical marks) from s.
+
+  Et ça sera sa moitié => Et ca sera sa moitie"
+  [^String s]
+  {:pre [(string? s)]
+   :post [(string? %)]}
+  (-> s
+      (Normalizer/normalize java.text.Normalizer$Form/NFD)
+      (.replaceAll  "\\p{InCombiningDiacriticalMarks}+" "")))

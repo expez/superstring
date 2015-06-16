@@ -493,3 +493,9 @@
     "HTTP_REQUEST" (str/screaming-snake-case "HTTPRequest")
     "SNAKE_CASE" (str/screaming-snake-case "snake_case")
     "SCREAMING_SNAKE_CASE" (str/screaming-snake-case "SCREAMING_SNAKE_CASE")))
+
+(deftest strip-accents-test
+  (are [expected actual] (= expected actual)
+    "Et ca sera sa moitie" (str/strip-accents "Et ça sera sa moitié")
+    "aaaaaaaæaccceeeeeghiiiijlnnooooooøssssttuuuuuunyyczzz"
+    (str/strip-accents "ąàáäâãåæăćčĉęèéëêĝĥìíïîĵľńňòóöőôõøśșšŝťțŭùúüűûñÿýçżźž")))

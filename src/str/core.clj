@@ -384,25 +384,6 @@
          true s)
     s))
 
-(defn wrap-words
-  "Insert newlines in s so the length of each line doesn't exceed width."
-  [^String s width]
-  (let [words (remove empty? (split s #"\n|\t|\n| "))]
-    (loop [out (StringBuffer.), remaining-words words, current-width 0]
-      (cond
-        (not (seq remaining-words)) (trimr (.toString out))
-
-        (<= (+ current-width (inc (.length (first remaining-words)))) width)
-        (recur (.append out (str (first remaining-words) " ")) (rest remaining-words)
-               (+ current-width (inc (.length (first remaining-words)))))
-
-        (>= (.length (first remaining-words)) width)
-        (do (when (= (.charAt out (dec (.length out))) \space)
-              (.deleteCharAt out (dec (.length out))))
-            (recur (.append out (str "\n" (first remaining-words))) (rest remaining-words) width))
-
-        :else (recur (.append out "\n") remaining-words 0)))))
-
 (defn- split-words [^String s]
   (remove empty?
           (-> s
@@ -413,6 +394,21 @@
                #"(\p{javaLowerCase})(\p{javaUpperCase})" "$1 $2")
               (split
                #"[^\w0-9]+"))))
+
+(defn wrap-words
+  "Insert newlines in s so the length of each line doesn't exceed width."
+  [^String s width]
+  (->> (split s #"\n|\t|\n| ")
+       (remove empty?)
+       (reduce
+        (fn [{:keys [len res]} word]
+          (if (< (+ len (.length word)) width)
+            {:len (+ len (.length word) 1) :res (conj res " " word)}
+            {:len (.length word) :res (conj res "\n" word)}))
+        {:len 0 :res []})
+       :res
+       rest ; drop leading " "
+       (apply str)))
 
 (defn ^String lisp-case
   "Lower case s and separate words with dashes.

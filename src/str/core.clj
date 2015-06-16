@@ -528,3 +528,10 @@
   (when (and (seq (drop-while (complement upper-if-upper-exists?) s))
              (seq (drop-while (complement lower-if-lower-exists?) s)))
     s))
+
+(defn ^String collapse-whitespace
+  "Convert all adjacent whitespace characters in s to a single space."
+  [^String s]
+  {:pre [(string? s)]
+   :post [(string? %)]}
+  (.replaceAll s "[ \t\n\r]+" " "))

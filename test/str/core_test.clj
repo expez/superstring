@@ -546,3 +546,22 @@
   (are [expected actual] (= expected actual)
     "FooBar" (str/mixed-case? "FooBar")
     nil (str/mixed-case? "foo")))
+
+(def whitespace
+  (gen/fmap #(apply str %)
+            (gen/not-empty (gen/vector
+                            (gen/elements [\tab \newline \return \space])))))
+
+(defspec collapse-whitespace-collapses-whitespace 100
+  (prop/for-all [s (gen/not-empty gen/string-alphanumeric)
+                 ws1 (gen/not-empty whitespace)
+                 ws2 (gen/not-empty whitespace)]
+    (is (= (+ (.length s) 2)
+           (.length (str/collapse-whitespace (str ws1 s ws2)))))))
+
+(deftest collapse-whitespace-test
+  (are [expected actual] (= expected actual)
+    "foo bar baz" (str/collapse-whitespace "foo
+
+bar    	baz")
+    " foo bar baz " (str/collapse-whitespace " foo bar baz ")))

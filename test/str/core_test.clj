@@ -532,3 +532,17 @@
   (are [expected actual] (= expected actual)
     "this-that-the-other-various-outre-considerations"
     (str/slug "This, That & the Other! Various Outré   Considerations")))
+
+(defspec mixed-case-is-true-for-mixed-case-strings 100
+  (prop/for-all [s1 (gen/not-empty gen/string)
+                 s2 (gen/not-empty gen/string)]
+    (is (str/mixed-case? (str (str/upper-case s1) (str/lower-case s2))))))
+
+(defspec mixed-case-is-false-for-upper-case-strings 100
+  (prop/for-all [s string-ascii]
+    (is (not (str/mixed-case? (str/upper-case s))))))
+
+(deftest mixed-case?-test
+  (are [expected actual] (= expected actual)
+    "FooBar" (str/mixed-case? "FooBar")
+    nil (str/mixed-case? "foo")))

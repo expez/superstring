@@ -601,4 +601,13 @@ bar    	baz")
 (deftest distance-test
   (are [expected actual] (= expected actual)
     0 (str/distance "foo" "foo")
-    1 (str/distance "foo" "fo")))
+    0 (str/distance "foo" "foo" :lehvenstein)
+    1 (str/distance "foo" "fo")
+    3 (str/distance "karolin" "kathrin" :hamming)
+    3 (str/distance "karolin" "kerstin" :hamming)
+    2 (str/distance "1011101" "1001001" :hamming)
+    3 (str/distance "2173896" "2233796" :hamming)
+    3 (str/distance "foo" "foobar" :hamming)))
+
+(deftest distance-throws-on-unknown
+  (is (thrown? IllegalArgumentException (str/distance :unknown-algorithm))))

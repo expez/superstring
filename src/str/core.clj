@@ -556,7 +556,10 @@
     (subsolution (.length s1) (.length s2))))
 
 (defn- ^Long hamming-distance [^String s1 ^String s2]
-  )
+  (+
+   (reduce + (map #(if (= %1 %2) 0 1) s1 s2))
+   (- (max (.length s1) (.length s2))
+      (min (.length s1) (.length s2)))))
 
 (defn ^Long distance
   "Get the distance between s1 and s2.

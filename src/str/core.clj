@@ -270,18 +270,10 @@
 (defn ^String contains-any?
   "Return s if s contains any of the needles."
   ([^String s needles]
-   (loop [needles needles]
-     (when (seq needles)
-       (if (case-sensitive-contains s (first needles))
-         s
-         (recur (rest needles))))))
+   (some (partial case-sensitive-contains s) needles))
   ([^String s needles ignore-case]
    (if ignore-case
-     (loop [needles needles]
-       (when (seq needles)
-         (if (case-insensitive-contains s (first needles))
-           s
-           (recur (rest needles)))))
+     (some (partial case-insensitive-contains s) needles)
      (contains-any? s needles))))
 
 (defn ^String truncate

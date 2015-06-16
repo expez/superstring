@@ -535,3 +535,47 @@
   {:pre [(string? s)]
    :post [(string? %)]}
   (.replaceAll s "[ \t\n\r]+" " "))
+
+(defn- ^Long lehvenstein-distance
+  [^String s1 ^String s2]
+  (let [subsolutions (atom {})
+        subsolution (fn [i j]
+                      (if (or (zero? i) (zero? j))
+                        (max i j)
+                        (get @subsolutions [i j])))]
+    (doseq [i (range 1 (inc (.length s1)))]
+      (doseq [j (range 1 (inc (.length s2)))]
+        (swap! subsolutions assoc [i j]
+               (min (inc (subsolution (dec i) j))
+                    (inc (subsolution i (dec j)))
+                    (+ (subsolution (dec i) (dec j))
+                       (if (= (.charAt s1 (dec i))
+                              (.charAt s2 (dec j)))
+                         0
+                         1))))))
+    (subsolution (.length s1) (.length s2))))
+
+(defn- ^Long hamming-distance [^String s1 ^String s2]
+  )
+
+(defn ^Long distance
+  "Get the distance between s1 and s2.
+
+  The default distance metric is the Lehvenstein distance.
+
+  The optional algorithm argument can be either :lehvenstein to get
+  the default, or :hamming to get the Hamming distance between s1 and
+  s2."
+  ([^String s1 ^String s2]
+   {:pre [(string? s1)
+          (string? s2)]
+    :post [(integer? %)]}
+   (lehvenstein-distance s1 s2))
+  ([^String s1 ^String s2 algorithm]
+   {:pre [(string? s1)
+          (string? s2)]
+    :post [(integer? %)]}
+   (case algorithm
+     :lehvenstein (distance s1 s2)
+     :hamming (hamming-distance s1 s2)
+     (throw (IllegalArgumentException. (str "Unknown algorithm: " algorithm) )))))

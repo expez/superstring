@@ -435,8 +435,8 @@
   (or (<= (.length line) width)
       (not (re-find #" " line))))
 
-(defspec wrap-words-have-lines-no-longer-than-max-width 100
-  (prop/for-all [words (gen/bind (gen/choose 50 1000)
+(defspec wrap-words-have-lines-no-longer-than-max-width 25
+  (prop/for-all [words (gen/bind (gen/choose 50 500)
                                  #(gen/return (gen/sample (word) %)))
                  width (gen/choose 8 80)]
     (is (reduce (fn [acc line]
@@ -565,3 +565,40 @@
 
 bar    	baz")
     " foo bar baz " (str/collapse-whitespace " foo bar baz ")))
+
+(defspec lehvenstein-distance-is-at-least-difference-between-string-lenghts 100
+  (prop/for-all [s1 (gen/not-empty gen/string)
+                 s2 (gen/not-empty gen/string)]
+    (is (>= (str/distance s1 s2)
+            (- (max (.length s1) (.length s2))
+               (min (.length s1) (.length s2)))))))
+
+(defspec lehvenstein-distance-is-at-most-length-of-longest-string 100
+  (prop/for-all [s1 (gen/not-empty gen/string)
+                 s2 (gen/not-empty gen/string)]
+    (is (<= (str/distance s1 s2)
+            (max (.length s1) (.length s2))))))
+
+(defspec lehvenstein-distance-is-zero-for-equal-strings 100
+  (prop/for-all [s (gen/not-empty gen/string)]
+    (is (= 0 (str/distance s s)))))
+
+(defspec lehvenstein-distance-is-zero-means-equal-strings 100
+  (prop/for-all [s1 (gen/not-empty gen/string)
+                 s2 (gen/not-empty gen/string)]
+    (if (= (str/distance s1 s2) 0)
+      (is (= s1 s2))
+      true)))
+
+(defspec lehvenstein-triangle 100
+  (prop/for-all [s1 (gen/not-empty gen/string)
+                 s2 (gen/not-empty gen/string)
+                 s3 (gen/not-empty gen/string)]
+    (<= (str/distance s1 s2)
+        (+ (str/distance s1 s3)
+           (str/distance s2 s3)))))
+
+(deftest distance-test
+  (are [expected actual] (= expected actual)
+    0 (str/distance "foo" "foo")
+    1 (str/distance "foo" "fo")))

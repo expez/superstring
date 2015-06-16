@@ -360,7 +360,7 @@
   "Return s if s is all upper case.
 
   Characters without case, e.g. numbers, are considered to be trivially
-  true."
+  upper case."
   [^String s]
   {:pre [(string? s)]
    :post [(or (nil? %) (string? %))]}
@@ -374,7 +374,7 @@
   "Return s if s is all lower case.
 
   Characters without case, e.g. numbers, are considered to be trivially
-  true."
+  lower case."
   [^String s]
   {:pre [(string? s)]
    :post [(or (nil? %) (string? %))]}

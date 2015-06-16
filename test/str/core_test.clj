@@ -499,3 +499,15 @@
     "Et ca sera sa moitie" (str/strip-accents "Et ça sera sa moitié")
     "aaaaaaaæaccceeeeeghiiiijlnnooooooøssssttuuuuuunyyczzz"
     (str/strip-accents "ąàáäâãåæăćčĉęèéëêĝĥìíïîĵľńňòóöőôõøśșšŝťțŭùúüűûñÿýçżźž")))
+
+(def string-ascii
+  (gen/fmap #(apply str %) (gen/vector gen/char-alpha)))
+
+(defspec ascii?-returns-s-on-ascii-strings 100
+  (prop/for-all [s (gen/not-empty gen/string-ascii)]
+    (is (= s (str/ascii? s)))))
+
+(deftest ascii?-test
+  (are [expected actual] (= expected actual)
+    "ascii" (str/ascii? "ascii")
+    nil (str/ascii? "Et ça sera sa moitié")))

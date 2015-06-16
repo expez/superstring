@@ -481,3 +481,13 @@
   (-> s
       (Normalizer/normalize java.text.Normalizer$Form/NFD)
       (.replaceAll  "\\p{InCombiningDiacriticalMarks}+" "")))
+
+(defn ^String ascii?
+  "Return s if s only contains ASCII characters."
+  [^String s]
+  {:pre [(string? s)]
+   :post [(or (nil? %) (string? %))]}
+  ;; The ASCII character set is encoded as the integers from 0 to 127.
+  (when (reduce (fn [acc c] (and acc (< (int c) 128))) true s)
+    s))
+

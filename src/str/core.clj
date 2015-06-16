@@ -18,7 +18,7 @@
          (def ~name))
        ;; When copying metadata, disregard {:macro false}.
        ;; Workaround for http://www.assembla.com/spaces/clojure/tickets/273
-       #(conj (dissoc % :macro)
+       #(conj (dissoc % :macro :added)
               (apply dissoc (meta (var ~orig)) (remove #{:macro} (keys %)))))
       (var ~name)))
   ([name orig doc]
@@ -581,4 +581,4 @@
    (case algorithm
      :lehvenstein (distance s1 s2)
      :hamming (hamming-distance s1 s2)
-     (throw (IllegalArgumentException. (str "Unknown algorithm: " algorithm) )))))
+     (throw (IllegalArgumentException. (str "Unknown algorithm: " algorithm))))))

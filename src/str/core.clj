@@ -564,3 +564,34 @@
      :levenshtein (distance s1 s2)
      :hamming (hamming-distance s1 s2)
      (throw (IllegalArgumentException. (str "Unknown algorithm: " algorithm))))))
+
+(defn longest-common-substrings
+  "Returns the set of the longest common substrings in s1 and s2.
+
+  This implementation uses dynamic programming, and not a generalized
+  suffix tree, so the runtime is O(nm)."
+  [^String s1 ^String s2]
+  {:pre [(string? s1)
+         (string? s2)]
+   :post [(set? %)]}
+  (let [rows (inc (.length s1))
+        cols (inc (.length  s2))
+        ls (make-array Long rows cols)
+        z (atom 0)
+        ret (atom #{})]
+    (doseq [i (range 0 rows)]
+      (doseq [j (range 0 cols)]
+        (aset ls i j 0)))
+    (doseq [i (range 1 rows)]
+      (doseq [j (range 1 cols)]
+        (when(= (.charAt s1 (dec i)) (.charAt s2 (dec j)))
+          (if (or (= i 0) (= j 0))
+            (aset ls i j 1)
+            (aset ls i j (inc (aget ls (dec i) (dec j)))))
+          (if (> (aget ls i j) @z)
+            (do
+              (reset! z (aget ls i j))
+              (reset! ret #{(.substring s1 (- i @z) i)}))
+            (when (= (aget ls i j) @z)
+              (swap! ret conj (.substring s1 (- i @z) i)))))))
+    @ret))

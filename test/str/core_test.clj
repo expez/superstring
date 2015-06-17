@@ -611,3 +611,18 @@ bar    	baz")
 
 (deftest distance-throws-on-unknown
   (is (thrown? IllegalArgumentException (str/distance :unknown-algorithm))))
+
+(deftest longest-common-substrings
+  (are [expected actual] (= expected actual)
+    #{"foo" "bar"} (str/longest-common-substrings "fooquxbar" "foobar")
+    #{"bar"} (str/longest-common-substrings "FOOquxbar" "foobar")
+    #{} (str/longest-common-substrings "foo" "bar")))
+
+(defspec finds-common-substring 100
+  (prop/for-all [s1 (gen/such-that #(< (count %) 5) (gen/not-empty gen/string)
+                                   500)
+                 s2 (gen/such-that #(< (count %) 5) (gen/not-empty gen/string)
+                                   500)
+                 lcs (gen/such-that #(> (count %) 5) (gen/not-empty gen/string)
+                                    500)]
+    (is ((str/longest-common-substrings (str s1 lcs) (str lcs s2)) lcs))))

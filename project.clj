@@ -1,4 +1,4 @@
-(defproject str "0.1.0-SNAPSHOT"
+(defproject str "1.0.0"
   :description "String manipulation library for clojure"
   :url "http://github.com/expez/str"
   :license {:name "Eclipse Public License 1.0"

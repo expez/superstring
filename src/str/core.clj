@@ -222,53 +222,40 @@
      (.substring s (.length prefix))
      s)))
 
-(defn- ^String case-sensitive-contains
-  [^String s ^String needle]
-  (if (= needle "")
-    s
-    (when (and (seq s) (seq needle) (.contains s needle))
-      s)))
+(defn- ^String sensitive-contains [^String s ^String needle]
+  (.contains s needle))
 
-(defn- case-insensitive-contains
-  [^String s ^String needle]
-  (if (= needle "")
-    s
-    (when (and (seq s) (seq needle))
-      (let [p (java.util.regex.Pattern/compile
-               (java.util.regex.Pattern/quote needle)
-               (bit-or java.util.regex.Pattern/CASE_INSENSITIVE
-                       java.util.regex.Pattern/UNICODE_CASE))]
-        (when (re-find p s)
-          s)))))
+(defn- ^String insensitive-contains [^String s ^String needle]
+  (let [p (java.util.regex.Pattern/compile
+                (java.util.regex.Pattern/quote needle)
+                (bit-or java.util.regex.Pattern/CASE_INSENSITIVE
+                        java.util.regex.Pattern/UNICODE_CASE))]
+    (re-find p s)))
 
 (defn ^String contains?
   "Return s if s contains needle."
   ([^String s ^String needle]
-   (case-sensitive-contains s needle))
-  ([^String s ^String needle ignore-case]
-   (if ignore-case
-     (case-insensitive-contains s needle)
-     (case-sensitive-contains s needle))))
+   (contains? s needle sensitive-contains))
+  ([^String s ^String needle f]
+   (if (= needle "")
+     s
+     (when (and (seq s) (seq needle) (f s needle))
+       s))))
 
 (defn ^String contains-all?
   "Return s if s contains all needles."
   ([^String s needles]
-   (when (every? (partial case-sensitive-contains s) needles)
-     s))
-  ([^String s needles ignore-case]
-   (if ignore-case
-     (when (every? (partial case-insensitive-contains s) needles)
-       s)
-     (contains-all? s needles))))
+   (contains-all? s needles sensitive-contains))
+  ([^String s needles f]
+     (when (every? (partial f s) needles)
+       s)))
 
 (defn ^String contains-any?
   "Return s if s contains any of the needles."
   ([^String s needles]
-   (some (partial case-sensitive-contains s) needles))
-  ([^String s needles ignore-case]
-   (if ignore-case
-     (some (partial case-insensitive-contains s) needles)
-     (contains-any? s needles))))
+   (contains-any? s needles sensitive-contains))
+  ([^String s needles f]
+   (some (partial f s) needles)))
 
 (defn ^String truncate
   "If s is longer than len-3, cut it down to len-3 and append '...'"

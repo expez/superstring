@@ -601,7 +601,7 @@ bar    	baz")
 (deftest distance-test
   (are [expected actual] (= expected actual)
     0 (str/distance "foo" "foo")
-    0 (str/distance "foo" "foo" :lehvenstein)
+    0 (str/distance "foo" "foo" :levenshtein)
     1 (str/distance "foo" "fo")
     3 (str/distance "karolin" "kathrin" :hamming)
     3 (str/distance "karolin" "kerstin" :hamming)

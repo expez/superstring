@@ -518,7 +518,7 @@
    :post [(string? %)]}
   (.replaceAll s "[ \t\n\r]+" " "))
 
-(defn- ^Long lehvenstein-distance
+(defn- ^Long levenshtein-distance
   [^String s1 ^String s2]
   (let [subsolutions (atom {})
         subsolution (fn [i j]
@@ -548,19 +548,19 @@
 
   The default distance metric is the Lehvenstein distance.
 
-  The optional algorithm argument can be either :lehvenstein to get
+  The optional algorithm argument can be either :levenshtein to get
   the default, or :hamming to get the Hamming distance between s1 and
   s2."
   ([^String s1 ^String s2]
    {:pre [(string? s1)
           (string? s2)]
     :post [(integer? %)]}
-   (lehvenstein-distance s1 s2))
+   (levenshtein-distance s1 s2))
   ([^String s1 ^String s2 algorithm]
    {:pre [(string? s1)
           (string? s2)]
     :post [(integer? %)]}
    (case algorithm
-     :lehvenstein (distance s1 s2)
+     :levenshtein (distance s1 s2)
      :hamming (hamming-distance s1 s2)
      (throw (IllegalArgumentException. (str "Unknown algorithm: " algorithm))))))

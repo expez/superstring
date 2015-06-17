@@ -271,7 +271,7 @@
      (contains-any? s needles))))
 
 (defn ^String truncate
-  "If s is longer than len-3, cut it down to len-3 and append '...'"
+  "If s is longer than len-3, cut it down to len-3 and append '...'."
   [^String s len]
   {:pre [(not (nil? s)) (>= len 3)]}
   (if (> (.length s) (max 3 (- len 3)))
@@ -279,7 +279,7 @@
     s))
 
 (defn ^String common-prefix
-  "Return the longest common prefix of s1 and s2"
+  "Return the longest common prefix of s1 and s2."
   ([^String s1 ^String s2]
    {:pre [(string? s1) (string? s2)]
     :post [(string? %)]}
@@ -302,7 +302,7 @@
           (apply str)))))
 
 (defn ^String common-suffix
-  "Return the longest common suffix of s1 and s2"
+  "Return the longest common suffix of s1 and s2."
   ([^String s1 ^String s2]
    {:pre [(string? s1) (string? s2)]
     :post [(string? %)]}

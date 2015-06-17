@@ -104,7 +104,7 @@
   "Return a new string with the given record separator removed from
   the end (if present).
 
-  If seperator is not provided chomp will remove \\n, \\r or \\r\\n from
+  If separator is not provided chomp will remove \\n, \\r or \\r\\n from
   the end of s."
   ([^String s]
    (cond

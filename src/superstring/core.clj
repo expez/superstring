@@ -1,4 +1,4 @@
-(ns str.core
+(ns superstring.core
   (:require clojure.string)
   (:refer-clojure :exclude [reverse replace contains?])
   (:import java.text.Normalizer))

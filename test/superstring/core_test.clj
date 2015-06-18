@@ -1,10 +1,10 @@
-(ns str.core-test
+(ns superstring.core-test
   (:require [clojure.test :refer :all]
             [clojure.test.check
              [clojure-test :refer [defspec]]
              [generators :as gen]
              [properties :as prop]]
-            [str.core :as str]))
+            [superstring.core :as str]))
 
 (defspec appending-separator-and-chomping-does-not-alter-length 100
   (prop/for-all [s gen/string

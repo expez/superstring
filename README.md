@@ -1,7 +1,5 @@
 # str [![Build Status](https://travis-ci.org/xsc/lein-ancient.svg?branch=master)](https://travis-ci.org/expez/str)
 
-Clojure string library
-
 ## Installation
 
 Add the following dependency to your `project.clj` file:
@@ -15,7 +13,7 @@ Add the following dependency to your `project.clj` file:
 [API Docs](http://expez.github.io/str/doc/str.core.html)
 
 ## Raison d'être
-
+<img src="https://cloud.githubusercontent.com/assets/1006557/8227518/71776fb2-15a8-11e5-82b5-72e4a5fd4db0.jpg" align="right">
 This is a convenience library.  There's nothing in here that you haven't written at least once before, but your time is valuable and you shouldn't have to do it again.
 
 It's also annoying to pull in `$library` as well as `clojure.string`

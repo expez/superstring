@@ -488,7 +488,7 @@
   (-> s
       (.replaceAll "\\s+" "-")
       strip-accents
-      (.replaceAll "[^A-ZA-z0-9_.~-]" "")
+      (.replaceAll "[^A-Za-z0-9_.~-]" "")
       (.replaceAll "-+" "-")
       lower-case))
 

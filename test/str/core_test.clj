@@ -526,7 +526,7 @@
 
 (defspec slug-only-contains-unreserved-characters 100
   (prop/for-all [s (gen/not-empty gen/string)]
-    (is (not (re-matches #"[^A-ZA-z0-9_.~-]+" (str/slug s))))))
+    (is (not (re-matches #"[^A-Za-z0-9_.~-]+" (str/slug s))))))
 
 (deftest slug-test
   (are [expected actual] (= expected actual)

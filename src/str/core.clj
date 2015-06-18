@@ -34,7 +34,7 @@
 (alias-ns clojure.string)
 
 (defn- ^String slice-relative-to-end
-  [s index length]
+  [^String s index length]
   (if (neg? (+ (.length s) index)) ; slice outside beg of s
     nil
     (slice s (+ (.length s) index) length)))
@@ -84,7 +84,7 @@
 
   If a third argument is provided the string comparison is insensitive to case."
   ([^CharSequence s ^CharSequence prefix]
-   (when (.startsWith s prefix)
+   (when (.startsWith (.toString s) prefix)
      s))
   ([^CharSequence s ^CharSequence prefix ignore-case]
    (if-not ignore-case
@@ -139,14 +139,14 @@
 (defn ^String swap-case
   "Change lower case characters to upper case and vice versa."
   [^CharSequence s]
-  (let [invert-case (fn [c]
+  (let [invert-case (fn [^Character c]
                       (cond
                         (Character/isLowerCase c) (Character/toUpperCase c)
                         (Character/isUpperCase c) (Character/toLowerCase c)
                         :else c))]
     (->> s .toString (map invert-case) (apply str))))
 
-(defn- gen-padding
+(defn- ^String gen-padding
   "Generate the necessary padding to fill s upto width."
   [^CharSequence s ^CharSequence padding ^long width]
   (let [missing (- width (.length s))
@@ -155,7 +155,7 @@
                       (rem missing (* full-lengths (.length padding))))
         s (.toString s)
         padding (.toString padding)]
-    (.concat (apply str (repeat full-lengths padding))
+    (.concat ^String (apply str (repeat full-lengths padding))
              (.substring padding 0 remaining))))
 
 
@@ -181,11 +181,11 @@
   ([^CharSequence s ^long width ^CharSequence padding]
    {:pre [(not-empty padding)
           (not (nil? s))]
-    :post [(= (.length %) width)]}
+    :post [(= (.length ^String %) width)]}
    (let [s (.toString s)]
      (if (<= width (.length s))
        s
-       (.concat (gen-padding s padding width) s)))))
+       (.concat ^String (gen-padding s padding width) ^String s)))))
 
 (defn ^String center
   "Pad both ends of s with padding, or spaces, until the length of s
@@ -202,7 +202,7 @@
        s
        (let [missing (- width (.length s))
              full-lengths (Math/ceil (/ missing (.length padding)))
-             p (gen-padding s padding width)
+             ^String p (gen-padding s padding width)
              lengths-before (Math/floor (/ full-lengths 2))]
          (str (.substring p 0 (* (.length padding) lengths-before))
               s
@@ -243,7 +243,7 @@
        s))))
 
 (defn- case-sensitive-contains
-  [s needle]
+  [^String s ^String needle]
   (if (= needle "")
     s
     (when (and (seq s) (seq needle) (.contains s needle))
@@ -280,12 +280,12 @@
   "Return s if s contains all needles."
   ([^CharSequence s needles]
    (let [s (.toString s)
-         needles (map #(.toString %) needles)]
+         needles (map #(.toString ^String %) needles)]
      (when (every? (partial case-sensitive-contains s) needles)
        s)))
   ([^CharSequence s needles ignore-case]
    (let [s (.toString s)
-         needles (map #(.toString %) needles)]
+         needles (map #(.toString ^String %) needles)]
      (if ignore-case
        (when (every? (partial case-insensitive-contains s) needles)
          s)
@@ -295,11 +295,11 @@
   "Return s if s contains any of the needles."
   ([^CharSequence s needles]
    (let [s (.toString s)
-         needles (map #(.toString %) needles)]
+         needles (map #(.toString ^String %) needles)]
      (some (partial case-sensitive-contains s) needles)))
   ([^CharSequence s needles ignore-case]
    (let [s (.toString s)
-         needles (map #(.toString %) needles)]
+         needles (map #(.toString ^String %) needles)]
      (if ignore-case
        (some (partial case-insensitive-contains s) needles)
        (contains-any? s needles)))))
@@ -312,6 +312,13 @@
     (if (> (.length s) (max 3 (- len 3)))
       (str (.substring s 0 (- len 3)) "...")
       s)))
+
+(defn- char-equal-ignore-case
+  [^Character c1 ^Character c2]
+  (when (or (= c1 c2)
+            (= (Character/toUpperCase c1) c2)
+            (= (Character/toLowerCase c1) c2))
+    c1))
 
 (defn ^String common-prefix
   "Return the longest common prefix of s1 and s2."
@@ -330,11 +337,7 @@
      (common-prefix s1 s2)
      (->> s1
           .toString
-          (map #(when (or (= %1 %2)
-                          (= (Character/toUpperCase %1) %2)
-                          (= (Character/toLowerCase %1) %2))
-                  %1)
-               (.toString s2))
+          (map char-equal-ignore-case (.toString s2))
           (take-while (complement nil?))
           (apply str)))))
 
@@ -356,11 +359,7 @@
      (common-suffix s1 s2)
      (->> s1
           reverse
-          (map #(when (or (= %1 %2)
-                          (= (Character/toUpperCase %1) %2)
-                          (= (Character/toLowerCase %1) %2))
-                  %1)
-               (reverse s2))
+          (map char-equal-ignore-case (reverse s2))
           (take-while (complement nil?))
           (apply str)
           reverse))))
@@ -389,7 +388,7 @@
   {:pre [(not (nil? s))]
    :post [(or (nil? %) (string? %))]}
   (when (reduce
-         (fn [acc c]
+         (fn [acc ^Character c]
            (and acc (or (Character/isUpperCase c) (= c (Character/toUpperCase c)))))
          true (.toString s))
     s))
@@ -403,7 +402,7 @@
   {:pre [(not (nil? s))]
    :post [(or (nil? %) (string? %))]}
   (when (reduce
-         (fn [acc c]
+         (fn [acc ^Character c]
            (and acc (or (Character/isLowerCase c) (= c (Character/toLowerCase c)))))
          true (.toString s))
     s))
@@ -425,7 +424,7 @@
   (->> (split s #"\n|\t|\n| ")
        (remove empty?)
        (reduce
-        (fn [{:keys [len res]} word]
+        (fn [{:keys [len res]} ^String word]
           (if (< (+ len (.length word)) width)
             {:len (+ len (.length word) 1) :res (conj res " " word)}
             {:len (.length word) :res (conj res "\n" word)}))
@@ -560,7 +559,7 @@
   (.replaceAll (.toString s) "[ \t\n\r]+" " "))
 
 (defn- levenshtein-distance
-  [s1 s2]
+  [^String s1 ^String s2]
   (let [subsolutions (atom {})
         subsolution (fn [i j]
                       (if (or (zero? i) (zero? j))
@@ -578,7 +577,7 @@
                          1))))))
     (subsolution (.length s1) (.length s2))))
 
-(defn- hamming-distance [s1 s2]
+(defn- hamming-distance [^String s1 ^String s2]
   (+
    (reduce + (map #(if (= %1 %2) 0 1) s1 s2))
    (- (max (.length s1) (.length s2))

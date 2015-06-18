@@ -1,4 +1,4 @@
-# superstring [![Build Status](https://travis-ci.org/xsc/lein-ancient.svg?branch=master)](https://travis-ci.org/expez/str)
+# superstring [![Build Status](https://travis-ci.org/expez/superstring.svg?branch=master)](https://travis-ci.org/expez/superstring)
 
 ## Installation
 

@@ -270,8 +270,6 @@
 (deftest contains-test?
   (are [expected actual] (= expected actual)
     "" (str/contains? "" "")
-    nil (str/contains? "" nil)
-    nil (str/contains? nil "")
     "1" (str/contains? "1" "1")
     "foo" (str/contains? "foo" "fo")
     nil (str/contains? "foobar" "qux")

@@ -34,7 +34,7 @@
 (alias-ns clojure.string)
 
 (defn- ^String slice-relative-to-end
-  [^String s ^long index ^long length]
+  [s index length]
   (if (neg? (+ (.length s) index)) ; slice outside beg of s
     nil
     (slice s (+ (.length s) index) length)))
@@ -51,27 +51,31 @@
 
   Returns nil if index falls outside the string boundaries or if
   length is negative."
-  ([^String s ^long index]
+  ([^CharSequence s ^long index]
    (slice s index 1))
-  ([^String s ^long index ^long length]
-   (cond
-     (neg? length) nil
-     (neg? (+ (.length s) index)) nil ; slice relative to end falls outside s
-     (neg? index) (slice-relative-to-end s index length)
-     (>= index (.length s)) nil
-     (> (- length index) (.length (.substring s index))) (.substring s index)
-     :else (let [end (+ index length)]
-             (.substring s index end)))))
+  ([^CharSequence s ^long index ^long length]
+   (let [s (.toString s)]
+     (cond
+       (neg? length) nil
+       (neg? (+ (.length s) index)) nil ; slice relative to end falls outside s
+       (neg? index) (slice-relative-to-end s index length)
+       (>= index (.length s)) nil
+       (> (- length index) (.length (.substring s index))) (.substring s index)
+       :else (let [end (+ index length)]
+               (.substring s index end))))))
 
 (defn ^String ends-with?
   "Return s if s ends with suffix."
-  ([^String s ^String suffix]
-   (when (.endsWith s suffix)
-     s))
-  ([^String s ^String suffix ignore-case]
+  ([^CharSequence s ^CharSequence suffix]
+   (let [s (.toString s)]
+     (when (.endsWith s suffix)
+       s)))
+  ([^CharSequence s ^CharSequence suffix ignore-case]
    (if-not ignore-case
      (ends-with? s suffix)
-     (let [end (.substring s (max 0 (- (.length s) (.length suffix))))]
+     (let [s (.toString s)
+           suffix (.toString suffix)
+           end (.substring s (max 0 (- (.length s) (.length suffix))))]
        (when (.equalsIgnoreCase end suffix)
          s)))))
 
@@ -79,13 +83,15 @@
   "Return s if s starts with with prefix.
 
   If a third argument is provided the string comparison is insensitive to case."
-  ([^String s ^String prefix]
+  ([^CharSequence s ^CharSequence prefix]
    (when (.startsWith s prefix)
      s))
-  ([^String s ^String prefix ignore-case]
+  ([^CharSequence s ^CharSequence prefix ignore-case]
    (if-not ignore-case
      (starts-with? s prefix)
-     (let [beg (.substring s 0 (.length prefix))]
+     (let [s (.toString s)
+           prefix (.toString prefix)
+           beg (.substring s 0 (.length prefix))]
        (when (.equalsIgnoreCase beg prefix)
          s)))))
 
@@ -95,10 +101,11 @@
   If the string ends with \\r\\n, both characters are removed.
 
   Applying chop to an empty string is a no-op."
-  [^String s]
-  (if (.endsWith s "\r\n")
-    (.substring s 0 (- (.length s) 2))
-    (.substring s 0 (max 0 (dec (.length s))))))
+  [^CharSequence s]
+  (let [s (.toString s)]
+    (if (.endsWith s "\r\n")
+      (.substring s 0 (- (.length s) 2))
+      (.substring s 0 (max 0 (dec (.length s)))))))
 
 (defn ^String chomp
   "Return a new string with the given record separator removed from
@@ -106,43 +113,48 @@
 
   If separator is not provided chomp will remove \\n, \\r or \\r\\n from
   the end of s."
-  ([^String s]
-   (cond
-     (.endsWith s "\r\n") (.substring s 0 (- (.length s) 2))
-     (.endsWith s "\r") (.substring s 0 (dec (.length s)))
-     (.endsWith s "\n") (.substring s 0 (dec (.length s)))
-     :else s))
-  ([^String s ^String separator]
-   (if (.endsWith s separator)
-     (.substring s 0 (- (.length s) (.length separator)))
-     s)))
+  ([^CharSequence s]
+   (let [s (.toString s)]
+     (cond
+       (.endsWith s "\r\n") (.substring s 0 (- (.length s) 2))
+       (.endsWith s "\r") (.substring s 0 (dec (.length s)))
+       (.endsWith s "\n") (.substring s 0 (dec (.length s)))
+       :else s)))
+  ([^CharSequence s ^CharSequence separator]
+   (let [s (.toString s)]
+     (if (.endsWith s separator)
+       (.substring s 0 (- (.length s) (.length separator)))
+       s))))
 
 (defn ^String capitalize
   "Return a new string where the first character is in upper case and
   all others in lower case."
-  [^String s]
-  (case (.length s)
-    0 ""
-    1 (upper-case s)
-    (str (upper-case (.substring s 0 1)) (lower-case (.substring s 1)))) )
+  [^CharSequence s]
+  (let [s (.toString s)]
+    (case (.length s)
+      0 ""
+      1 (upper-case s)
+      (str (upper-case (.substring s 0 1)) (lower-case (.substring s 1))))) )
 
 (defn ^String swap-case
   "Change lower case characters to upper case and vice versa."
-  [^String s]
+  [^CharSequence s]
   (let [invert-case (fn [c]
                       (cond
                         (Character/isLowerCase c) (Character/toUpperCase c)
                         (Character/isUpperCase c) (Character/toLowerCase c)
                         :else c))]
-    (->> s (map invert-case) (apply str))))
+    (->> s .toString (map invert-case) (apply str))))
 
 (defn- gen-padding
   "Generate the necessary padding to fill s upto width."
-  [^String s ^String padding ^long width]
+  [^CharSequence s ^CharSequence padding ^Long width]
   (let [missing (- width (.length s))
         full-lengths (Math/floor (/ missing (.length padding)))
         remaining (if (zero? full-lengths) (- width (.length s))
-                      (rem missing (* full-lengths (.length padding))))]
+                      (rem missing (* full-lengths (.length padding))))
+        s (.toString s)
+        padding (.toString padding)]
     (.concat (apply str (repeat full-lengths padding))
              (.substring padding 0 remaining))))
 
@@ -150,87 +162,95 @@
 (defn ^String pad-right
   "Pad the end of s with padding, or spaces, until the length of s matches
   width."
-  ([^String s ^long width]
+  ([^CharSequence s ^long width]
    (pad-right s width " "))
-  ([^String s ^long width ^String padding]
+  ([^CharSequence s ^Long width ^CharSequence padding]
    {:pre [(not-empty padding)
           (not (nil? s))]
     :post [(= (.length %) width)]}
-   (if (<= width (.length s))
-     s
-     (.concat s (gen-padding s padding width)))))
+   (let [s (.toString s)]
+     (if (<= width (.length s))
+       s
+       (.concat s (gen-padding s padding width))))))
 
 (defn ^String pad-left
   "Pad the beginning of s with padding, or spaces, until the length of
   s matches width."
-  ([^String s ^long width]
+  ([^CharSequence s ^Long width]
    (pad-left s width " "))
-  ([^String s ^long width ^String padding]
+  ([^CharSequence s ^Long width ^CharSequence padding]
    {:pre [(not-empty padding)
           (not (nil? s))]
     :post [(= (.length %) width)]}
-   (if (<= width (.length s))
-     s
-     (.concat (gen-padding s padding width) s))))
+   (let [s (.toString s)]
+     (if (<= width (.length s))
+       s
+       (.concat (gen-padding s padding width) s)))))
 
 (defn ^String center
   "Pad both ends of s with padding, or spaces, until the length of s
   matches width."
-  ([^String s ^long width]
+  ([^CharSequence s ^Long width]
    (center s width " "))
-  ([^String s ^long width ^String padding]
+  ([^CharSequence s ^Long width ^CharSequence padding]
    {:pre [(not-empty padding)
           (not (nil? s))]
     :post [(= (.length %) width)]}
-   (if (<= width (.length s))
-     s
-     (let [missing (- width (.length s))
-           full-lengths (Math/ceil (/ missing (.length padding)))
-           p (gen-padding s padding width)
-           lengths-before (Math/floor (/ full-lengths 2))]
-       (str (.substring p 0 (* (.length padding) lengths-before))
-            s
-            (.substring p (* (.length padding) lengths-before)))))))
+   (let [s (.toString s)
+         padding (.toString padding)]
+     (if (<= width (.length s))
+       s
+       (let [missing (- width (.length s))
+             full-lengths (Math/ceil (/ missing (.length padding)))
+             p (gen-padding s padding width)
+             lengths-before (Math/floor (/ full-lengths 2))]
+         (str (.substring p 0 (* (.length padding) lengths-before))
+              s
+              (.substring p (* (.length padding) lengths-before))))))))
 
 (defn ^String chop-suffix
   "If s ends with suffix return a new string without the suffix.
 
   Otherwise return s."
-  ([^String s ^String suffix]
+  ([^CharSequence s ^CharSequence suffix]
    (chop-suffix s suffix false))
-  ([^String s ^String suffix ignore-case]
+  ([^CharSequence s ^CharSequence suffix ignore-case]
    {:pre [(not (nil? s))
           (not (nil? suffix))]
     :post [(not (nil? %))]}
-   (if (and (>= (.length s) (.length suffix))
-            (ends-with? s suffix ignore-case))
-     (.substring s 0 (- (.length s) (.length suffix)))
-     s)))
+   (let [s (.toString s)
+         suffix (.toString suffix)]
+     (if (and (>= (.length s) (.length suffix))
+              (ends-with? s suffix ignore-case))
+       (.substring s 0 (- (.length s) (.length suffix)))
+       s))))
 
 (defn ^String chop-prefix
   "If s starts with with prefix return a new string without the prefix.
 
   Otherwise return s."
-  ([^String s ^String prefix]
+  ([^CharSequence s ^CharSequence prefix]
    (chop-prefix s prefix false))
-  ([^String s ^String prefix ignore-case]
+  ([^CharSequence s ^CharSequence prefix ignore-case]
    {:pre [(not (nil? s))
           (not (nil? prefix))]
     :post [(not (nil? %))]}
-   (if (and (>= (.length s) (.length prefix))
-            (starts-with? s prefix ignore-case))
-     (.substring s (.length prefix))
-     s)))
+   (let [s (.toString s)
+         prefix (.toString prefix)]
+     (if (and (>= (.length s) (.length prefix))
+              (starts-with? s prefix ignore-case))
+       (.substring s (.length prefix))
+       s))))
 
-(defn- ^String case-sensitive-contains
-  [^String s ^String needle]
+(defn- case-sensitive-contains
+  [s needle]
   (if (= needle "")
     s
     (when (and (seq s) (seq needle) (.contains s needle))
       s)))
 
 (defn- case-insensitive-contains
-  [^String s ^String needle]
+  [s needle]
   (if (= needle "")
     s
     (when (and (seq s) (seq needle))
@@ -241,70 +261,87 @@
         (when (re-find p s)
           s)))))
 
-(defn ^String contains?
+(defn ^CharSequence contains?
   "Return s if s contains needle."
-  ([^String s ^String needle]
-   (case-sensitive-contains s needle))
-  ([^String s ^String needle ignore-case]
+  ([^CharSequence s ^CharSequence needle]
+   {:pre [(not (nil? s))
+          (not (nil? needle))]
+    :post [(or (nil? %) (string? %))]}
+   (case-sensitive-contains (.toString s) (.toString needle)))
+  ([^CharSequence s ^CharSequence needle ignore-case]
+   {:pre [(not (nil? s))
+          (not (nil? needle))]
+    :post [(or (nil? %) (string? %))]}
    (if ignore-case
-     (case-insensitive-contains s needle)
-     (case-sensitive-contains s needle))))
+     (case-insensitive-contains (.toString s) (.toString needle))
+     (case-sensitive-contains (.toString s) (.toString needle)))))
 
 (defn ^String contains-all?
   "Return s if s contains all needles."
-  ([^String s needles]
-   (when (every? (partial case-sensitive-contains s) needles)
-     s))
-  ([^String s needles ignore-case]
-   (if ignore-case
-     (when (every? (partial case-insensitive-contains s) needles)
-       s)
-     (contains-all? s needles))))
+  ([^CharSequence s needles]
+   (let [s (.toString s)
+         needles (map #(.toString %) needles)]
+     (when (every? (partial case-sensitive-contains s) needles)
+       s)))
+  ([^CharSequence s needles ignore-case]
+   (let [s (.toString s)
+         needles (map #(.toString %) needles)]
+     (if ignore-case
+       (when (every? (partial case-insensitive-contains s) needles)
+         s)
+       (contains-all? s needles)))))
 
 (defn ^String contains-any?
   "Return s if s contains any of the needles."
-  ([^String s needles]
-   (some (partial case-sensitive-contains s) needles))
-  ([^String s needles ignore-case]
-   (if ignore-case
-     (some (partial case-insensitive-contains s) needles)
-     (contains-any? s needles))))
+  ([^CharSequence s needles]
+   (let [s (.toString s)
+         needles (map #(.toString %) needles)]
+     (some (partial case-sensitive-contains s) needles)))
+  ([^CharSequence s needles ignore-case]
+   (let [s (.toString s)
+         needles (map #(.toString %) needles)]
+     (if ignore-case
+       (some (partial case-insensitive-contains s) needles)
+       (contains-any? s needles)))))
 
 (defn ^String truncate
   "If s is longer than len-3, cut it down to len-3 and append '...'."
-  [^String s len]
+  [^CharSequence s len]
   {:pre [(not (nil? s)) (>= len 3)]}
-  (if (> (.length s) (max 3 (- len 3)))
-    (str (.substring s 0 (- len 3)) "...")
-    s))
+  (let [s (.toString s)]
+    (if (> (.length s) (max 3 (- len 3)))
+      (str (.substring s 0 (- len 3)) "...")
+      s)))
 
 (defn ^String common-prefix
   "Return the longest common prefix of s1 and s2."
-  ([^String s1 ^String s2]
-   {:pre [(string? s1) (string? s2)]
+  ([^CharSequence s1 ^CharSequence s2]
+   {:pre [(not (nil? s1)) (not (nil? s2))]
     :post [(string? %)]}
    (->> s1
-        (map #(when (= %1 %2) %1) s2)
+        .toString
+        (map #(when (= %1 %2) %1) (.toString s2))
         (take-while (complement nil?))
         (apply str)))
-  ([^String s1 ^String s2 ignore-case]
-   {:pre [(string? s1) (string? s2)]
+  ([^CharSequence s1 ^CharSequence s2 ignore-case]
+   {:pre [(not (nil? s1)) (not (nil? s2))]
     :post [(string? %)]}
    (if-not ignore-case
      (common-prefix s1 s2)
      (->> s1
+          .toString
           (map #(when (or (= %1 %2)
                           (= (Character/toUpperCase %1) %2)
                           (= (Character/toLowerCase %1) %2))
                   %1)
-               s2)
+               (.toString s2))
           (take-while (complement nil?))
           (apply str)))))
 
 (defn ^String common-suffix
   "Return the longest common suffix of s1 and s2."
-  ([^String s1 ^String s2]
-   {:pre [(string? s1) (string? s2)]
+  ([^CharSequence s1 ^CharSequence s2]
+   {:pre [(not (nil? s1)) (not (nil? s2))]
     :post [(string? %)]}
    (->> s1
         reverse
@@ -312,8 +349,8 @@
         (take-while (complement nil?))
         (apply str)
         reverse))
-  ([^String s1 ^String s2 ignore-case]
-   {:pre [(string? s1) (string? s2)]
+  ([^CharSequence s1 ^CharSequence s2 ignore-case]
+   {:pre [(not (nil? s1)) (not (nil? s2))]
     :post [(string? %)]}
    (if-not ignore-case
      (common-suffix s1 s2)
@@ -335,10 +372,11 @@
 
 (defn ^String title-case
   "Capitalize the first character of s and lower case the rest."
-  [^String s]
-  {:pre [(string? s)]
+  [^CharSequence s]
+  {:pre [(not (nil? s))]
    :post [(string? %)]}
-  (let [first-char (first s)
+  (let [s (.toString s)
+        first-char (first s)
         start (if (upper-exists? first-char) (upper-case first-char) first-char)]
     (str start (lower-case (.substring s 1)))))
 
@@ -347,13 +385,13 @@
 
   Characters without case, e.g. numbers, are considered to be trivially
   upper case."
-  [^String s]
-  {:pre [(string? s)]
+  [^CharSequence s]
+  {:pre [(not (nil? s))]
    :post [(or (nil? %) (string? %))]}
   (when (reduce
          (fn [acc c]
            (and acc (or (Character/isUpperCase c) (= c (Character/toUpperCase c)))))
-         true s)
+         true (.toString s))
     s))
 
 (defn ^String lower-case?
@@ -361,16 +399,16 @@
 
   Characters without case, e.g. numbers, are considered to be trivially
   lower case."
-  [^String s]
-  {:pre [(string? s)]
+  [^CharSequence s]
+  {:pre [(not (nil? s))]
    :post [(or (nil? %) (string? %))]}
   (when (reduce
          (fn [acc c]
            (and acc (or (Character/isLowerCase c) (= c (Character/toLowerCase c)))))
-         true s)
+         true (.toString s))
     s))
 
-(defn- split-words [^String s]
+(defn- split-words [^CharSequence s]
   (remove empty?
           (-> s
               (replace #"_|-" " ")
@@ -383,7 +421,7 @@
 
 (defn wrap-words
   "Insert newlines in s so the length of each line doesn't exceed width."
-  [^String s width]
+  [^CharSequence s width]
   (->> (split s #"\n|\t|\n| ")
        (remove empty?)
        (reduce
@@ -403,8 +441,8 @@
   camelCase => camel-case
 
   This is also referred to as kebab-case in some circles."
-  [^String s]
-  {:pre [(string? s)]
+  [^CharSequence s]
+  {:pre [(not (nil? s))]
    :post [(string? %)]}
   (join "-" (map lower-case (split-words s))))
 
@@ -414,8 +452,8 @@
   foo bar => fooBar
   camelCase => camelCase
   PascalCase => pascalCase"
-  [^String s]
-  {:pre [(string? s)]
+  [^CharSequence s]
+  {:pre [(not (nil? s))]
    :post [(string? %)]}
   (let [words (split-words s)]
     (join ""  (conj (map capitalize (rest words)) (lower-case (first words))))))
@@ -426,8 +464,8 @@
   foo bar => FooBar
   camelCase => CamelCase
   PascalCase => PascalCase"
-  [^String s]
-  {:pre [(string? s)]
+  [^CharSequence s]
+  {:pre [(not (nil? s))]
    :post [(string? %)]}
   (join ""  (map capitalize (split-words s))))
 
@@ -437,8 +475,8 @@
   foo bar => foo_bar
   camelCase => camel_case
   PascalCase => pascal_case"
-  [^String s]
-  {:pre [(string? s)]
+  [^CharSequence s]
+  {:pre [(not (nil? s))]
    :post [(string? %)]}
   (join "_"  (map lower-case (split-words s))))
 
@@ -448,8 +486,8 @@
   foo bar => FOO_BAR
   camelCase => CAMEL_CASE
   PascalCase => PASCAL_CASE"
-  [^String s]
-  {:pre [(string? s)]
+  [^CharSequence s]
+  {:pre [(not (nil? s))]
    :post [(string? %)]}
   (join "_"  (map upper-case (split-words s))))
 
@@ -457,20 +495,21 @@
   "Strip all accents (diacritical marks) from s.
 
   Et ça sera sa moitié => Et ca sera sa moitie"
-  [^String s]
-  {:pre [(string? s)]
+  [^CharSequence s]
+  {:pre [(not (nil? s))]
    :post [(string? %)]}
   (-> s
+      .toString
       (Normalizer/normalize java.text.Normalizer$Form/NFD)
       (.replaceAll  "\\p{InCombiningDiacriticalMarks}+" "")))
 
 (defn ^String ascii?
   "Return s if s only contains ASCII characters."
-  [^String s]
-  {:pre [(string? s)]
+  [^CharSequence s]
+  {:pre [(not (nil? s))]
    :post [(or (nil? %) (string? %))]}
   ;; The ASCII character set is encoded as the integers from 0 to 127.
-  (when (reduce (fn [acc c] (and acc (< (int c) 128))) true s)
+  (when (reduce (fn [acc c] (and acc (< (int c) 128))) true (.toString s))
     s))
 
 (defn ^String slug
@@ -482,10 +521,11 @@
   * Any character which isn't alphanumeric or in #{_-.~} is removed.
   * Lower case
   * Whitespace is collapsed and replaced by a single dash."
-  [^String s]
-  {:pre [(string? s)]
+  [^CharSequence s]
+  {:pre [(not (nil? s))]
    :post [(string? %)]}
   (-> s
+      .toString
       (.replaceAll "\\s+" "-")
       strip-accents
       (.replaceAll "[^A-Za-z0-9_.~-]" "")
@@ -504,22 +544,23 @@
 
 (defn ^String mixed-case?
   "Return s if s contains both upper and lower case letters. "
-  [^String s]
-  {:pre [(string? s)]
+  [^CharSequence s]
+  {:pre [(not (nil? s))]
    :post [(or (nil? %) (string? %))]}
-  (when (and (seq (drop-while (complement upper-if-upper-exists?) s))
-             (seq (drop-while (complement lower-if-lower-exists?) s)))
-    s))
+  (let [s (.toString s)]
+    (when (and (seq (drop-while (complement upper-if-upper-exists?) s))
+               (seq (drop-while (complement lower-if-lower-exists?) s)))
+      s)))
 
 (defn ^String collapse-whitespace
   "Convert all adjacent whitespace characters in s to a single space."
-  [^String s]
-  {:pre [(string? s)]
+  [^CharSequence s]
+  {:pre [(not (nil? s))]
    :post [(string? %)]}
-  (.replaceAll s "[ \t\n\r]+" " "))
+  (.replaceAll (.toString s) "[ \t\n\r]+" " "))
 
 (defn- ^Long levenshtein-distance
-  [^String s1 ^String s2]
+  [s1 s2]
   (let [subsolutions (atom {})
         subsolution (fn [i j]
                       (if (or (zero? i) (zero? j))
@@ -537,7 +578,7 @@
                          1))))))
     (subsolution (.length s1) (.length s2))))
 
-(defn- ^Long hamming-distance [^String s1 ^String s2]
+(defn- ^Long hamming-distance [s1 s2]
   (+
    (reduce + (map #(if (= %1 %2) 0 1) s1 s2))
    (- (max (.length s1) (.length s2))
@@ -551,30 +592,34 @@
   The optional algorithm argument can be either :levenshtein to get
   the default, or :hamming to get the Hamming distance between s1 and
   s2."
-  ([^String s1 ^String s2]
-   {:pre [(string? s1)
-          (string? s2)]
+  ([^CharSequence s1 ^CharSequence s2]
+   {:pre [(not (nil? s1))
+          (not (nil? s2))]
     :post [(integer? %)]}
-   (levenshtein-distance s1 s2))
-  ([^String s1 ^String s2 algorithm]
-   {:pre [(string? s1)
-          (string? s2)]
+   (levenshtein-distance (.toString s1) (.toString s2)))
+  ([^CharSequence s1 ^CharSequence s2 algorithm]
+   {:pre [(not (nil? s1))
+          (not (nil? s2))]
     :post [(integer? %)]}
-   (case algorithm
-     :levenshtein (distance s1 s2)
-     :hamming (hamming-distance s1 s2)
-     (throw (IllegalArgumentException. (str "Unknown algorithm: " algorithm))))))
+   (let [s1 (.toString s1)
+         s2 (.toString s2)]
+     (case algorithm
+       :levenshtein (distance s1 s2)
+       :hamming (hamming-distance s1 s2)
+       (throw (IllegalArgumentException. (str "Unknown algorithm: " algorithm)))))))
 
 (defn longest-common-substrings
   "Returns the set of the longest common substrings in s1 and s2.
 
   This implementation uses dynamic programming, and not a generalized
   suffix tree, so the runtime is O(nm)."
-  [^String s1 ^String s2]
-  {:pre [(string? s1)
-         (string? s2)]
+  [^CharSequence s1 ^CharSequence s2]
+  {:pre [(not (nil? s1))
+         (not (nil? s2))]
    :post [(set? %)]}
-  (let [rows (inc (.length s1))
+  (let [s1 (.toString s1)
+        s2 (.toString s2)
+        rows (inc (.length s1))
         cols (inc (.length  s2))
         ls (make-array Long rows cols)
         z (atom 0)

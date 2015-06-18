@@ -148,7 +148,7 @@
 
 (defn- gen-padding
   "Generate the necessary padding to fill s upto width."
-  [^CharSequence s ^CharSequence padding ^Long width]
+  [^CharSequence s ^CharSequence padding ^long width]
   (let [missing (- width (.length s))
         full-lengths (Math/floor (/ missing (.length padding)))
         remaining (if (zero? full-lengths) (- width (.length s))
@@ -164,7 +164,7 @@
   width."
   ([^CharSequence s ^long width]
    (pad-right s width " "))
-  ([^CharSequence s ^Long width ^CharSequence padding]
+  ([^CharSequence s ^long width ^CharSequence padding]
    {:pre [(not-empty padding)
           (not (nil? s))]
     :post [(= (.length %) width)]}
@@ -176,9 +176,9 @@
 (defn ^String pad-left
   "Pad the beginning of s with padding, or spaces, until the length of
   s matches width."
-  ([^CharSequence s ^Long width]
+  ([^CharSequence s ^long width]
    (pad-left s width " "))
-  ([^CharSequence s ^Long width ^CharSequence padding]
+  ([^CharSequence s ^long width ^CharSequence padding]
    {:pre [(not-empty padding)
           (not (nil? s))]
     :post [(= (.length %) width)]}
@@ -190,9 +190,9 @@
 (defn ^String center
   "Pad both ends of s with padding, or spaces, until the length of s
   matches width."
-  ([^CharSequence s ^Long width]
+  ([^CharSequence s ^long width]
    (center s width " "))
-  ([^CharSequence s ^Long width ^CharSequence padding]
+  ([^CharSequence s ^long width ^CharSequence padding]
    {:pre [(not-empty padding)
           (not (nil? s))]
     :post [(= (.length %) width)]}
@@ -559,7 +559,7 @@
    :post [(string? %)]}
   (.replaceAll (.toString s) "[ \t\n\r]+" " "))
 
-(defn- ^Long levenshtein-distance
+(defn- levenshtein-distance
   [s1 s2]
   (let [subsolutions (atom {})
         subsolution (fn [i j]
@@ -578,7 +578,7 @@
                          1))))))
     (subsolution (.length s1) (.length s2))))
 
-(defn- ^Long hamming-distance [s1 s2]
+(defn- hamming-distance [s1 s2]
   (+
    (reduce + (map #(if (= %1 %2) 0 1) s1 s2))
    (- (max (.length s1) (.length s2))

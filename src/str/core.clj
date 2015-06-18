@@ -445,9 +445,9 @@
 (defn ^String screaming-snake-case
   "Upper case s and use underscores to separate words.
 
-  foo bar => foo_bar
-  camelCase => camel_case
-  PascalCase => pascal_case"
+  foo bar => FOO_BAR
+  camelCase => CAMEL_CASE
+  PascalCase => PASCAL_CASE"
   [^String s]
   {:pre [(string? s)]
    :post [(string? %)]}

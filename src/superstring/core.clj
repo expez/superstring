@@ -32,6 +32,7 @@
           (vals (ns-publics namespace)))))
 
 (alias-ns clojure.string)
+(def substring clojure.core/subs)
 
 (defn- ^String slice-relative-to-end
   [s index length]
@@ -59,9 +60,9 @@
      (neg? (+ (.length s) index)) nil ; slice relative to end falls outside s
      (neg? index) (slice-relative-to-end s index length)
      (>= index (.length s)) nil
-     (> (- length index) (.length (.substring s index))) (.substring s index)
+     (> (- length index) (.length (substring s index))) (substring s index)
      :else (let [end (+ index length)]
-             (.substring s index end)))))
+             (substring s index end)))))
 
 (defn ^String ends-with?
   "Return s if s ends with suffix."
@@ -71,7 +72,7 @@
   ([^String s ^String suffix ignore-case]
    (if-not ignore-case
      (ends-with? s suffix)
-     (let [end (.substring s (max 0 (- (.length s) (.length suffix))))]
+     (let [end (substring s (max 0 (- (.length s) (.length suffix))))]
        (when (.equalsIgnoreCase end suffix)
          s)))))
 
@@ -85,7 +86,7 @@
   ([^String s ^String prefix ignore-case]
    (if-not ignore-case
      (starts-with? s prefix)
-     (let [beg (.substring s 0 (.length prefix))]
+     (let [beg (substring s 0 (.length prefix))]
        (when (.equalsIgnoreCase beg prefix)
          s)))))
 
@@ -97,8 +98,8 @@
   Applying chop to an empty string is a no-op."
   [^String s]
   (if (.endsWith s "\r\n")
-    (.substring s 0 (- (.length s) 2))
-    (.substring s 0 (max 0 (dec (.length s))))))
+    (substring s 0 (- (.length s) 2))
+    (substring s 0 (max 0 (dec (.length s))))))
 
 (defn ^String chomp
   "Return a new string with the given record separator removed from
@@ -108,13 +109,13 @@
   the end of s."
   ([^String s]
    (cond
-     (.endsWith s "\r\n") (.substring s 0 (- (.length s) 2))
-     (.endsWith s "\r") (.substring s 0 (dec (.length s)))
-     (.endsWith s "\n") (.substring s 0 (dec (.length s)))
+     (.endsWith s "\r\n") (substring s 0 (- (.length s) 2))
+     (.endsWith s "\r") (substring s 0 (dec (.length s)))
+     (.endsWith s "\n") (substring s 0 (dec (.length s)))
      :else s))
   ([^String s ^String separator]
    (if (.endsWith s separator)
-     (.substring s 0 (- (.length s) (.length separator)))
+     (substring s 0 (- (.length s) (.length separator)))
      s)))
 
 (defn ^String capitalize
@@ -124,7 +125,7 @@
   (case (.length s)
     0 ""
     1 (upper-case s)
-    (str (upper-case (.substring s 0 1)) (lower-case (.substring s 1)))) )
+    (str (upper-case (substring s 0 1)) (lower-case (substring s 1)))) )
 
 (defn ^String swap-case
   "Change lower case characters to upper case and vice versa."
@@ -144,7 +145,7 @@
         remaining (if (zero? full-lengths) (- width (.length s))
                       (rem missing (* full-lengths (.length padding))))]
     (str (apply str (repeat full-lengths padding))
-         (.substring padding 0 remaining))))
+         (substring padding 0 remaining))))
 
 
 (defn ^String pad-right
@@ -188,9 +189,9 @@
            full-lengths (Math/ceil (/ missing (.length padding)))
            p (gen-padding s padding width)
            lengths-before (Math/floor (/ full-lengths 2))]
-       (str (.substring p 0 (* (.length padding) lengths-before))
+       (str (substring p 0 (* (.length padding) lengths-before))
             s
-            (.substring p (* (.length padding) lengths-before)))))))
+            (substring p (* (.length padding) lengths-before)))))))
 
 (defn ^String chop-suffix
   "If s ends with suffix return a new string without the suffix.
@@ -204,7 +205,7 @@
     :post [(not (nil? %))]}
    (if (and (>= (.length s) (.length suffix))
             (ends-with? s suffix ignore-case))
-     (.substring s 0 (- (.length s) (.length suffix)))
+     (substring s 0 (- (.length s) (.length suffix)))
      s)))
 
 (defn ^String chop-prefix
@@ -219,7 +220,7 @@
     :post [(not (nil? %))]}
    (if (and (>= (.length s) (.length prefix))
             (starts-with? s prefix ignore-case))
-     (.substring s (.length prefix))
+     (substring s (.length prefix))
      s)))
 
 (defn- case-sensitive-contains
@@ -275,7 +276,7 @@
   [^String s len]
   {:pre [(not (nil? s)) (>= len 3)]}
   (if (> (.length s) (max 3 (- len 3)))
-    (str (.substring s 0 (- len 3)) "...")
+    (str (substring s 0 (- len 3)) "...")
     s))
 
 (defn- char-equal-ignore-case
@@ -343,7 +344,7 @@
    :post [(string? %)]}
   (let [first-char (first s)
         start (if (upper-exists? first-char) (upper-case first-char) first-char)]
-    (str start (lower-case (.substring s 1)))))
+    (str start (lower-case (substring s 1)))))
 
 (defn ^String upper-case?
   "Return s if s is all upper case.
@@ -594,7 +595,7 @@
           (if (> (aget ls i j) @z)
             (do
               (reset! z (aget ls i j))
-              (reset! ret #{(.substring s1 (- i @z) i)}))
+              (reset! ret #{(substring s1 (- i @z) i)}))
             (when (= (aget ls i j) @z)
-              (swap! ret conj (.substring s1 (- i @z) i)))))))
+              (swap! ret conj (substring s1 (- i @z) i)))))))
     @ret))

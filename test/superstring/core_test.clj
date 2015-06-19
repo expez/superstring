@@ -628,3 +628,8 @@ bar    	baz")
 (defspec length-test 100
   (prop/for-all [s gen/string]
     (is (= (.length s) (str/length s)))))
+
+(deftest distance-test
+  (are [expected actual] (= expected actual)
+    0 (str/index-of "foo" "foo")
+    -1 (str/index-of "foo" "bar")))

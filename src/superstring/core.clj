@@ -143,8 +143,8 @@
         full-lengths (Math/floor (/ missing (.length padding)))
         remaining (if (zero? full-lengths) (- width (.length s))
                       (rem missing (* full-lengths (.length padding))))]
-    (.concat (apply str (repeat full-lengths padding))
-             (.substring padding 0 remaining))))
+    (str (apply str (repeat full-lengths padding))
+         (.substring padding 0 remaining))))
 
 
 (defn ^String pad-right
@@ -158,7 +158,7 @@
     :post [(= (.length %) width)]}
    (if (<= width (.length s))
      s
-     (.concat s (gen-padding s padding width)))))
+     (str s (gen-padding s padding width)))))
 
 (defn ^String pad-left
   "Pad the beginning of s with padding, or spaces, until the length of
@@ -171,7 +171,7 @@
     :post [(= (.length %) width)]}
    (if (<= width (.length s))
      s
-     (.concat (gen-padding s padding width) s))))
+     (str (gen-padding s padding width) s))))
 
 (defn ^String center
   "Pad both ends of s with padding, or spaces, until the length of s

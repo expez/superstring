@@ -629,7 +629,12 @@ bar    	baz")
   (prop/for-all [s gen/string]
     (is (= (.length s) (str/length s)))))
 
-(deftest distance-test
+(deftest index-of-test
   (are [expected actual] (= expected actual)
     0 (str/index-of "foo" "foo")
     -1 (str/index-of "foo" "bar")))
+
+(deftest last-index-of-test
+  (are [expected actual] (= expected actual)
+    -1 (str/last-index-of "foo" "bar")
+    3 (str/last-index-of "foofoo" "foo")))

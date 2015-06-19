@@ -54,6 +54,19 @@
     :post [(integer? %)]}
    (.indexOf s needle start)))
 
+(defn ^Long last-index-of
+  "Return the starting position of the last occurrence of needle in s.
+
+  If start is provided, start the search at that position in s."
+  ([^String s needle]
+   {:pre [(string? s) (string? needle)]
+    :post [(integer? %)]}
+   (.lastIndexOf s needle))
+  ([^String s needle ^Long start]
+   {:pre [(string? s) (string? needle) (integer? start)]
+    :post [(integer? %)]}
+   (.lastIndexOf s needle start)))
+
 (defn- ^String slice-relative-to-end
   [s index length]
   (if (neg? (+ (superstring.core/length s) index))

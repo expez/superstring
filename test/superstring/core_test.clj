@@ -624,3 +624,7 @@ bar    	baz")
                  lcs (gen/such-that #(> (count %) 5) (gen/not-empty gen/string)
                                     500)]
     (is ((str/longest-common-substrings (str s1 lcs) (str lcs s2)) lcs))))
+
+(defspec length-test 100
+  (prop/for-all [s gen/string]
+    (is (= (.length s) (str/length s)))))

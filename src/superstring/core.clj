@@ -236,20 +236,19 @@
   [s needle]
   (if (= needle "")
     s
-    (when (and (seq s) (seq needle) (.contains s needle))
+    (when (.contains s needle)
       s)))
 
 (defn- case-insensitive-contains
   [s needle]
   (if (= needle "")
     s
-    (when (and (seq s) (seq needle))
-      (let [p (java.util.regex.Pattern/compile
-               (java.util.regex.Pattern/quote needle)
-               (bit-or java.util.regex.Pattern/CASE_INSENSITIVE
-                       java.util.regex.Pattern/UNICODE_CASE))]
-        (when (re-find p s)
-          s)))))
+    (let [p (java.util.regex.Pattern/compile
+             (java.util.regex.Pattern/quote needle)
+             (bit-or java.util.regex.Pattern/CASE_INSENSITIVE
+                     java.util.regex.Pattern/UNICODE_CASE))]
+      (when (re-find p s)
+        s))))
 
 (defn ^String contains?
   "Return s if s contains needle."

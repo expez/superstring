@@ -19,7 +19,7 @@
        ;; When copying metadata, disregard {:macro false}.
        ;; Workaround for http://www.assembla.com/spaces/clojure/tickets/273
        #(conj (dissoc % :macro :added)
-              (apply dissoc (meta (var ~orig)) (remove #{:macro} (keys %)))))
+              (apply dissoc (meta (var ~orig)) (remove #{:macro :added} (keys %)))))
       (var ~name)))
   ([name orig doc]
    (list `defalias (with-meta name (assoc (meta name) :doc doc)) orig)))

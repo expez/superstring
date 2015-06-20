@@ -603,7 +603,7 @@
      :hamming (hamming-distance s1 s2)
      (throw (IllegalArgumentException. (str "Unknown algorithm: " algorithm))))))
 
-(defn longest-common-substrings
+(defn longest-common-substring
   "Returns the set of the longest common substrings in s1 and s2.
 
   This implementation uses dynamic programming, and not a generalized

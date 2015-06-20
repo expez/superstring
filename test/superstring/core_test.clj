@@ -84,30 +84,6 @@
 (deftest chopping-the-empty-string-is-a-no-op []
   (is (= (str/chop "") "")))
 
-(defspec capitalized-strings-has-first-char-in-upper-case 100
-  (prop/for-all [s gen/string
-                 c gen/char-alpha]
-    (Character/isUpperCase (first (str/capitalize (str c s))))))
-
-(defn- lower-case-ascii-if-letter?
-  ([] true)
-  ([c] (if (Character/isLetter c) (Character/isLowerCase c) true))
-  ([acc c] (and acc (lower-case-ascii-if-letter? c))))
-
-(defspec capitalized-strings-has-rest-of-chars-in-lower-case 100
-  (prop/for-all [s gen/string
-                 c gen/char-alpha]
-    (reduce lower-case-ascii-if-letter?
-            (.substring (str/capitalize (str c s)) 1))))
-
-(deftest capitalize
-  (are [expected actual] (= expected actual)
-    "Foo" (str/capitalize "foo" )
-    "Foo" (str/capitalize "FOO")
-    "Foo" (str/capitalize "FoO")
-    "Foo" (str/capitalize "FoO")
-    "Foo." (str/capitalize "FoO.")))
-
 (defspec swap-case-does-not-change-length 100
   (prop/for-all [s gen/string]
     (= (.length (str/swap-case s)) (.length s))))

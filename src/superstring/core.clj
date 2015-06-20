@@ -153,15 +153,6 @@
      (substring s 0 (- (length s) (length separator)))
      s)))
 
-(defn ^String capitalize
-  "Return a new string where the first character is in upper case and
-  all others in lower case."
-  [^String s]
-  (case (length s)
-    0 ""
-    1 (upper-case s)
-    (str (upper-case (substring s 0 1)) (lower-case (substring s 1)))) )
-
 (defn ^String swap-case
   "Change lower case characters to upper case and vice versa."
   [^String s]

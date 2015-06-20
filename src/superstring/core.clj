@@ -582,9 +582,9 @@
       (min (length s1) (length s2)))))
 
 (defn ^Long distance
-  "Get the distance between s1 and s2.
+  "Get the edit distance between s1 and s2.
 
-  The default distance metric is the Lehvenstein distance.
+  The default distance metric is the Levenshtein distance.
 
   The optional algorithm argument can be either :levenshtein to get
   the default, or :hamming to get the Hamming distance between s1 and

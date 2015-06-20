@@ -564,31 +564,31 @@
 bar    	baz")
     " foo bar baz " (str/collapse-whitespace " foo bar baz ")))
 
-(defspec lehvenstein-distance-is-at-least-difference-between-string-lenghts 100
+(defspec levenshtein-distance-is-at-least-difference-between-string-lenghts 100
   (prop/for-all [s1 (gen/not-empty gen/string)
                  s2 (gen/not-empty gen/string)]
     (is (>= (str/distance s1 s2)
             (- (max (.length s1) (.length s2))
                (min (.length s1) (.length s2)))))))
 
-(defspec lehvenstein-distance-is-at-most-length-of-longest-string 100
+(defspec levenshtein-distance-is-at-most-length-of-longest-string 100
   (prop/for-all [s1 (gen/not-empty gen/string)
                  s2 (gen/not-empty gen/string)]
     (is (<= (str/distance s1 s2)
             (max (.length s1) (.length s2))))))
 
-(defspec lehvenstein-distance-is-zero-for-equal-strings 100
+(defspec levenshtein-distance-is-zero-for-equal-strings 100
   (prop/for-all [s (gen/not-empty gen/string)]
     (is (= 0 (str/distance s s)))))
 
-(defspec lehvenstein-distance-is-zero-means-equal-strings 100
+(defspec levenshtein-distance-is-zero-means-equal-strings 100
   (prop/for-all [s1 (gen/not-empty gen/string)
                  s2 (gen/not-empty gen/string)]
     (if (= (str/distance s1 s2) 0)
       (is (= s1 s2))
       true)))
 
-(defspec lehvenstein-triangle 100
+(defspec levenshtein-triangle 100
   (prop/for-all [s1 (gen/not-empty gen/string)
                  s2 (gen/not-empty gen/string)
                  s3 (gen/not-empty gen/string)]

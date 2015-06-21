@@ -614,3 +614,6 @@ bar    	baz")
   (are [expected actual] (= expected actual)
     -1 (str/last-index-of "foo" "bar")
     3 (str/last-index-of "foofoo" "foo")))
+
+(deftest added-metadata-is-removed-from-aliased-vars
+  (is (not (:added (meta #'str/trim)))))

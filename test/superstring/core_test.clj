@@ -608,11 +608,11 @@ bar    	baz")
 (deftest index-of-test
   (are [expected actual] (= expected actual)
     0 (str/index-of "foo" "foo")
-    -1 (str/index-of "foo" "bar")))
+    nil (str/index-of "foo" "bar")))
 
 (deftest last-index-of-test
   (are [expected actual] (= expected actual)
-    -1 (str/last-index-of "foo" "bar")
+    nil (str/last-index-of "foo" "bar")
     3 (str/last-index-of "foofoo" "foo")))
 
 (deftest added-metadata-is-removed-from-aliased-vars

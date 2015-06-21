@@ -43,30 +43,35 @@
   (.length s))
 
 (defn ^Long index-of
-  "Return the starting position of the first occurrence of needle in s.
+  "Return the starting position of the first occurrence of needle in s or nil.
 
   If start is provided, start the search at that position in s."
   ([^String s needle]
    {:pre [(string? s) (string? needle)]
-    :post [(integer? %)]}
-   (.indexOf s needle))
-  ([^String s needle ^Long start]
+    :post [(or (integer? %) (nil? %))]}
+   (index-of s needle 0))
+  ([^String s ^String needle start]
    {:pre [(string? s) (string? needle) (integer? start)]
-    :post [(integer? %)]}
-   (.indexOf s needle start)))
+    :post [(or (integer? %) (nil? %))]}
+   (let [i (.indexOf s needle start)]
+     (when-not (= i -1)
+       i))))
 
 (defn ^Long last-index-of
-  "Return the starting position of the last occurrence of needle in s.
+  "Searching backwards, return the starting position of the last occurrence of
+  needle in s or nil.
 
   If start is provided, start the search at that position in s."
   ([^String s needle]
    {:pre [(string? s) (string? needle)]
-    :post [(integer? %)]}
-   (.lastIndexOf s needle))
-  ([^String s needle ^Long start]
+    :post [(or (integer? %) (nil? %))]}
+   (last-index-of s needle (dec (length s))))
+  ([^String s ^String needle start]
    {:pre [(string? s) (string? needle) (integer? start)]
-    :post [(integer? %)]}
-   (.lastIndexOf s needle start)))
+    :post [(or (integer? %) (nil? %))]}
+   (let [i (.lastIndexOf s needle start)]
+     (when-not (= i -1)
+       i))))
 
 (defn- ^String slice-relative-to-end
   [s index length]

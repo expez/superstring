@@ -8,10 +8,10 @@
   :plugins [[codox "0.8.11"]]
   :codox {:src-dir-uri "http://github.com/expez/superstring/blob/master/"
           :src-linenum-anchor-prefix "L"}
-  :profiles {:dev {:dependencies [[org.clojure/clojure "1.6.0"]
+  :profiles {:dev {:dependencies [[org.clojure/clojure "1.7.0-RC2"]
                                   [org.clojure/test.check "0.7.0"]]
                    :repl-options {:init-ns superstring.core}}
              :provided {:dependencies [[org.clojure/clojure "1.6.0"]]}
              :1.5 {:dependencies [[org.clojure/clojure "1.5.1"]]}
              :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}
-             :1.7 {:dependencies [[org.clojure/clojure "1.7.0-beta3"]]}})
+             :1.7 {:dependencies [[org.clojure/clojure "1.7.0-RC2"]]}})

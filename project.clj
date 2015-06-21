@@ -10,7 +10,7 @@
           :src-linenum-anchor-prefix "L"}
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.6.0"]
                                   [org.clojure/test.check "0.7.0"]]
-                   :repl-options {:init-ns str.core}}
+                   :repl-options {:init-ns superstring.core}}
              :provided {:dependencies [[org.clojure/clojure "1.6.0"]]}
              :1.5 {:dependencies [[org.clojure/clojure "1.5.1"]]}
              :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}

@@ -1,4 +1,4 @@
-(defproject superstring "1.0.0"
+(defproject superstring "1.0.1"
   :description "String manipulation library for clojure"
   :url "http://github.com/expez/superstring"
   :license {:name "Eclipse Public License 1.0"

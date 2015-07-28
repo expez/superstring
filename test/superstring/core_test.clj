@@ -6,6 +6,11 @@
              [properties :as prop]]
             [superstring.core :as str]))
 
+(defmacro defexamples [name & examples]
+  `(deftest ~name
+     (are [actual expected] (= actual expected)
+       ~@examples)))
+
 (defspec appending-separator-and-chomping-does-not-alter-length 100
   (prop/for-all [s gen/string
                  sep gen/string]
@@ -34,15 +39,14 @@
   (prop/for-all [s gen/string]
     (= (.length (str/chomp (str s "\r\n"))) (.length s))))
 
-(deftest chomp
-  (are [expected actual] (= expected actual)
-    "" (str/chomp "" "")
-    "" (str/chomp "foo" "foo")
-    "foo"(str/chomp "foobar" "bar")
-    "foo" (str/chomp "foo\n")
-    "foo" (str/chomp "foo\r")
-    "foo" (str/chomp "foo\r\n")
-    "foo\n" (str/chomp "foo\n\r")))
+(defexamples chomp-examples
+  (str/chomp "" "") ""
+  (str/chomp "foo" "foo") ""
+  (str/chomp "foobar" "bar") "foo"
+  (str/chomp "foo\n") "foo"
+  (str/chomp "foo\r") "foo"
+  (str/chomp "foo\r\n") "foo"
+  (str/chomp "foo\n\r") "foo\n")
 
 (defspec ends-with?-acts-like-endsWith 100
   (prop/for-all [s gen/string
@@ -144,18 +148,17 @@
                  index gen/int]
     (nil? (str/slice s index len))))
 
-(deftest slice
-  (are [expected actual] (= expected actual)
-    nil (str/slice "" 0)
-    nil (str/slice "" 1)
-    nil (str/slice "12" 1 -1)
-    "1" (str/slice "1" 0)
-    "2" (str/slice "12" 1)
-    "12" (str/slice "12" 0 2)
-    "3456" (str/slice "0123456" 3 100)
-    "6" (str/slice "0123456" -1)
-    "45" (str/slice "0123456" -3 2)
-    "456" (str/slice "0123456" -3 100)))
+(defexamples slice
+  (str/slice "" 0) nil
+  (str/slice "" 1) nil
+  (str/slice "12" 1 -1) nil
+  (str/slice "1" 0) "1"
+  (str/slice "12" 1) "2"
+  (str/slice "12" 0 2) "12"
+  (str/slice "0123456" 3 100) "3456"
+  (str/slice "0123456" -1) "6"
+  (str/slice "0123456" -3 2) "45"
+  (str/slice "0123456" -3 100) "456")
 
 (defspec right-pad-results-in-strings-with-new-width 100
   (prop/for-all
@@ -195,16 +198,15 @@
                               (gen/such-that #(> % (.length s)) gen/pos-int 100))))]
     (= (.length (str/pad-left s width)) width)))
 
-(deftest center
-  (are [expected actual] (= expected actual)
-    "" (str/center "" 0)
-    " " (str/center "" 1)
-    "foo "(str/center "foo" 4)
-    " foo " (str/center "foo" 5)
-    "foo.!" (str/center "foo" 5 ".!")
-    "foo." (str/center "foo" 4 ".!")
-    ".!foo." (str/center "foo" 6 ".!")
-    ".!foo.!." (str/center "foo" 8 ".!")))
+(defexamples center
+  (str/center "" 0) ""
+  (str/center "" 1) " "
+  (str/center "foo" 4) "foo "
+  (str/center "foo" 5) " foo "
+  (str/center "foo" 5 ".!") "foo.!"
+  (str/center "foo" 4 ".!") "foo."
+  (str/center "foo" 6 ".!") ".!foo."
+  (str/center "foo" 8 ".!") ".!foo.!.")
 
 (defspec center-results-in-strings-with-new-width 100
   (prop/for-all
@@ -215,43 +217,40 @@
                               (gen/such-that #(> % (.length s)) gen/pos-int 100))))]
     (= (.length (str/center s width)) width)))
 
-(deftest chop-suffix
-  (are [expected actual] (= expected actual)
-    "" (str/chop-suffix "" "foo")
-    "" (str/chop-suffix "foo" "foo")
-    "foo"(str/chop-suffix "foobar" "bar")
-    "foo" (str/chop-suffix "foo " " ")
-    "foo" (str/chop-suffix "foo" "bar")
-    "foo" (str/chop-suffix "foo" "FOO")
-    "foo" (str/chop-suffix "foo" "O")
-    "fooÅ" (str/chop-suffix "fooÅ" "å")
-    "" (str/chop-suffix "foo" "FOO" :ignore-case)
-    "fo" (str/chop-suffix "foo" "O" :ignore-case)
-    "foo" (str/chop-suffix "fooÅ" "å" :ignore-case)))
+(defexamples chop-suffix
+  (str/chop-suffix "" "foo") ""
+  (str/chop-suffix "foo" "foo") ""
+  (str/chop-suffix "foobar" "bar") "foo"
+  (str/chop-suffix "foo " " ") "foo"
+  (str/chop-suffix "foo" "bar") "foo"
+  (str/chop-suffix "foo" "FOO") "foo"
+  (str/chop-suffix "foo" "O") "foo"
+  (str/chop-suffix "fooÅ" "å") "fooÅ"
+  (str/chop-suffix "foo" "FOO" :ignore-case) ""
+  (str/chop-suffix "foo" "O" :ignore-case) "fo"
+  (str/chop-suffix "fooÅ" "å" :ignore-case) "foo")
 
-(deftest chop-prefix
-  (are [expected actual] (= expected actual)
-    "" (str/chop-prefix "" "foo")
-    "" (str/chop-prefix "foo" "foo")
-    "bar"(str/chop-prefix "foobar" "foo")
-    "foo" (str/chop-prefix " foo" " ")
-    "foo" (str/chop-prefix "foo" "bar")
-    "foo" (str/chop-prefix "foo" "FOO")
-    "foo" (str/chop-prefix "foo" "F")
-    "Åfoo" (str/chop-prefix "Åfoo" "å")
-    "" (str/chop-prefix "foo" "FOO" :ignore-case)
-    "oo" (str/chop-prefix "foo" "F" :ignore-case)
-    "foo" (str/chop-prefix "Åfoo" "Å" :ignore-case)))
+(defexamples chop-prefix
+  (str/chop-prefix "" "foo") ""
+  (str/chop-prefix "foo" "foo") ""
+  (str/chop-prefix "foobar" "foo")   "bar"
+  (str/chop-prefix " foo" " ") "foo"
+  (str/chop-prefix "foo" "bar") "foo"
+  (str/chop-prefix "foo" "FOO") "foo"
+  (str/chop-prefix "foo" "F") "foo"
+  (str/chop-prefix "Åfoo" "å") "Åfoo"
+  (str/chop-prefix "foo" "FOO" :ignore-case) ""
+  (str/chop-prefix "foo" "F" :ignore-case) "oo"
+  (str/chop-prefix "Åfoo" "Å" :ignore-case) "foo")
 
-(deftest contains-test?
-  (are [expected actual] (= expected actual)
-    "" (str/contains? "" "")
-    "1" (str/contains? "1" "1")
-    "foo" (str/contains? "foo" "fo")
-    nil (str/contains? "foobar" "qux")
-    nil (str/contains? "foobar" "BAR")
-    "foobar" (str/contains? "foobar" "BAR" :ignore-case)
-    "Albert Åberg"(str/contains? "Albert Åberg" "åberg" :ignore-case)))
+(defexamples contains-test?
+  (str/contains? "" "") ""
+  (str/contains? "1" "1") "1"
+  (str/contains? "foo" "fo") "foo"
+  (str/contains? "foobar" "qux") nil
+  (str/contains? "foobar" "BAR") nil
+  (str/contains? "foobar" "BAR" :ignore-case) "foobar"
+  (str/contains? "Albert Åberg" "åberg" :ignore-case) "Albert Åberg")
 
 (defspec contains?-finds-generated-strings 100
   (prop/for-all [before gen/string
@@ -275,19 +274,18 @@
                  after gen/string]
     (str/contains? (str before needle after) needle :ignore-case)))
 
-(deftest contains-all?
-  (are [expected actual] (= expected actual)
-    "" (str/contains-all? "" [])
-    "" (str/contains-all? "" [""])
-    nil (str/contains-all? "" [nil])
-    nil (str/contains-all? nil [""])
-    "12" (str/contains-all? "12" ["1" "2"])
-    "foo" (str/contains-all? "foo" ["fo" "o"])
-    nil (str/contains-all? "foobar" ["qux"])
-    nil (str/contains-all? "foobar" ["foo" "qux"])
-    nil (str/contains-all? "foobar" ["BAR"])
-    "foobar" (str/contains-all? "foobar" ["BAR" "Foo"] :ignore-case)
-    "Albert Åberg"(str/contains-all? "Albert Åberg" ["åberg" "al"] :ignore-case)))
+(defexamples contains-all?
+  (str/contains-all? "" []) ""
+  (str/contains-all? "" [""]) ""
+  (str/contains-all? "" [nil]) nil
+  (str/contains-all? nil [""]) nil
+  (str/contains-all? "12" ["1" "2"]) "12"
+  (str/contains-all? "foo" ["fo" "o"]) "foo"
+  (str/contains-all? "foobar" ["qux"]) nil
+  (str/contains-all? "foobar" ["foo" "qux"]) nil
+  (str/contains-all? "foobar" ["BAR"]) nil
+  (str/contains-all? "foobar" ["BAR" "Foo"] :ignore-case) "foobar"
+  (str/contains-all? "Albert Åberg" ["åberg" "al"] :ignore-case)   "Albert Åberg")
 
 (defspec contains-all? 100
   (prop/for-all [s1 gen/string
@@ -318,23 +316,21 @@
                                       (gen/choose 3 (max 4 (- (.length s) 3)) ))))]
     (= (.length (str/truncate s len)) (min (.length s) len))))
 
-(deftest truncate
-  (are [expected actual] (= expected actual)
-    "" (str/truncate "" 3)
-    "..." (str/truncate "123456" 3)
-    "123..." (str/truncate "123456" 6)
-    "1" (str/truncate "1" 3)
-    "12" (str/truncate "12" 3)
-    "123" (str/truncate "123" 3)))
+(defexamples truncate
+  (str/truncate "" 3) ""
+  (str/truncate "123456" 3) "..."
+  (str/truncate "123456" 6) "123..."
+  (str/truncate "1" 3) "1"
+  (str/truncate "12" 3) "12"
+  (str/truncate "123" 3) "123")
 
-(deftest common-prefix
-  (are [expected actual] (= expected actual)
-    "" (str/common-prefix "321" "123")
-    "Åffø" (str/common-prefix "Åffø123456" "Åfføo8yuidfg")
-    "123" (str/common-prefix "123456" "123o8yuidfg")
-    "" (str/common-prefix "Åberg" "åberg")
-    "Åberg" (str/common-prefix "åberg" "Åberg" :ignore-case)
-    "åberg" (str/common-prefix "Åberg" "åberg" :ignore-case)))
+(defexamples common-prefix
+  (str/common-prefix "321" "123") ""
+  (str/common-prefix "Åffø123456" "Åfføo8yuidfg") "Åffø"
+  (str/common-prefix "123456" "123o8yuidfg") "123"
+  (str/common-prefix "Åberg" "åberg") ""
+  (str/common-prefix "åberg" "Åberg" :ignore-case) "Åberg"
+  (str/common-prefix "Åberg" "åberg" :ignore-case) "åberg")
 
 (defspec common-prefix-finds-common-prefixes 100
   (prop/for-all [prefix (gen/not-empty gen/string)
@@ -343,14 +339,13 @@
     (.startsWith (str/common-prefix (str prefix s1) (str prefix s2)) prefix)))
 
 
-(deftest common-suffix
-  (are [expected actual] (= expected actual)
-    "" (str/common-suffix "321" "123")
-    "Åffø" (str/common-suffix "123456Åffø" "o8yuidfgÅffø")
-    "123" (str/common-suffix "456123" "o8yuidfg123")
-    "" (str/common-suffix "åberG" "åberg")
-    "åberG" (str/common-suffix "åberg" "åberG" :ignore-case)
-    "åberg" (str/common-suffix "Åberg" "åberg" :ignore-case)))
+(defexamples common-suffix
+  (str/common-suffix "321" "123") ""
+  (str/common-suffix "123456Åffø" "o8yuidfgÅffø") "Åffø"
+  (str/common-suffix "456123" "o8yuidfg123") "123"
+  (str/common-suffix "åberG" "åberg") ""
+  (str/common-suffix "åberg" "åberG" :ignore-case) "åberG"
+  (str/common-suffix "Åberg" "åberg" :ignore-case) "åberg")
 
 (defspec common-suffix-finds-common-suffixes 100
   (prop/for-all [suffix (gen/not-empty gen/string)
@@ -418,61 +413,54 @@
                 true
                 (str/split-lines (str/wrap-words (str/join " " words) width))))))
 
-(deftest lower-case-test
-  (are [expected actual] (= expected actual)
-    "upper" (str/lower-case? "upper")
-    "123upper!" (str/lower-case? "123upper!")))
+(defexamples lower-case-test
+  (str/lower-case? "upper") "upper"
+  (str/lower-case? "123upper!") "123upper!")
 
 (defspec lisp-case-is-all-lower 100
   (prop/for-all [s (gen/not-empty gen/string)]
     (is (reduce (fn [acc c] (and acc (lower-if-lower-exists? c))) true
                 (str/lisp-case s)))))
 
-(deftest lisp-case-test
-  (are [expected actual] (= expected actual)
-    "pascal-case" (str/lisp-case "PascalCase")
-    "set-id" (str/lisp-case "setID")
-    "http-request" (str/lisp-case "HTTPRequest")
-    "snake-case" (str/lisp-case "snake_case")
-    "screaming-snake-case" (str/lisp-case "SCREAMING_SNAKE_CASE")))
+(defexamples lisp-case-test
+  (str/lisp-case "PascalCase") "pascal-case"
+  (str/lisp-case "setID") "set-id"
+  (str/lisp-case "HTTPRequest") "http-request"
+  (str/lisp-case "snake_case") "snake-case"
+  (str/lisp-case "SCREAMING_SNAKE_CASE") "screaming-snake-case")
 
-(deftest camel-case-test
-  (are [expected actual] (= expected actual)
-    "pascalCase" (str/camel-case "PascalCase")
-    "setId" (str/camel-case "setID")
-    "httpRequest" (str/camel-case "HTTPRequest")
-    "snakeCase" (str/camel-case "snake_case")
-    "screamingSnakeCase" (str/camel-case "SCREAMING_SNAKE_CASE")))
+(defexamples camel-case-test
+  (str/camel-case "PascalCase") "pascalCase"
+  (str/camel-case "setID") "setId"
+  (str/camel-case "HTTPRequest") "httpRequest"
+  (str/camel-case "snake_case") "snakeCase"
+  (str/camel-case "SCREAMING_SNAKE_CASE") "screamingSnakeCase")
 
-(deftest pascal-case-test
-  (are [expected actual] (= expected actual)
-    "PascalCase" (str/pascal-case "PascalCase")
-    "SetId" (str/pascal-case "setID")
-    "HttpRequest" (str/pascal-case "HTTPRequest")
-    "SnakeCase" (str/pascal-case "snake_case")
-    "ScreamingSnakeCase" (str/pascal-case "SCREAMING_SNAKE_CASE")))
+(defexamples pascal-case-test
+  (str/pascal-case "PascalCase") "PascalCase"
+  (str/pascal-case "setID") "SetId"
+  (str/pascal-case "HTTPRequest") "HttpRequest"
+  (str/pascal-case "snake_case") "SnakeCase"
+  (str/pascal-case "SCREAMING_SNAKE_CASE") "ScreamingSnakeCase")
 
-(deftest snake-case-test
-  (are [expected actual] (= expected actual)
-    "pascal_case" (str/snake-case "PascalCase")
-    "set_id" (str/snake-case "setID")
-    "http_request" (str/snake-case "HTTPRequest")
-    "snake_case" (str/snake-case "snake_case")
-    "screaming_snake_case" (str/snake-case "SCREAMING_SNAKE_CASE")))
+(defexamples snake-case-test
+  (str/snake-case "PascalCase") "pascal_case"
+  (str/snake-case "setID") "set_id"
+  (str/snake-case "HTTPRequest") "http_request"
+  (str/snake-case "snake_case") "snake_case"
+  (str/snake-case "SCREAMING_SNAKE_CASE") "screaming_snake_case")
 
-(deftest screaming-snake-case-test
-  (are [expected actual] (= expected actual)
-    "PASCAL_CASE" (str/screaming-snake-case "PascalCase")
-    "SET_ID" (str/screaming-snake-case "setID")
-    "HTTP_REQUEST" (str/screaming-snake-case "HTTPRequest")
-    "SNAKE_CASE" (str/screaming-snake-case "snake_case")
-    "SCREAMING_SNAKE_CASE" (str/screaming-snake-case "SCREAMING_SNAKE_CASE")))
+(defexamples screaming-snake-case-test
+  (str/screaming-snake-case "PascalCase") "PASCAL_CASE"
+  (str/screaming-snake-case "setID") "SET_ID"
+  (str/screaming-snake-case "HTTPRequest") "HTTP_REQUEST"
+  (str/screaming-snake-case "snake_case") "SNAKE_CASE"
+  (str/screaming-snake-case "SCREAMING_SNAKE_CASE") "SCREAMING_SNAKE_CASE")
 
-(deftest strip-accents-test
-  (are [expected actual] (= expected actual)
-    "Et ca sera sa moitie" (str/strip-accents "Et ça sera sa moitié")
-    "aaaaaaaæaccceeeeeghiiiijlnnooooooøssssttuuuuuunyyczzz"
-    (str/strip-accents "ąàáäâãåæăćčĉęèéëêĝĥìíïîĵľńňòóöőôõøśșšŝťțŭùúüűûñÿýçżźž")))
+(defexamples strip-accents-test
+  (str/strip-accents "Et ça sera sa moitié") "Et ca sera sa moitie"
+  (str/strip-accents "ąàáäâãåæăćčĉęèéëêĝĥìíïîĵľńňòóöőôõøśșšŝťțŭùúüűûñÿýçżźž")
+  "aaaaaaaæaccceeeeeghiiiijlnnooooooøssssttuuuuuunyyczzz")
 
 (def string-ascii
   (gen/fmap #(apply str %) (gen/vector gen/char-alpha)))
@@ -481,10 +469,9 @@
   (prop/for-all [s (gen/not-empty gen/string-ascii)]
     (is (= s (str/ascii? s)))))
 
-(deftest ascii?-test
-  (are [expected actual] (= expected actual)
-    "ascii" (str/ascii? "ascii")
-    nil (str/ascii? "Et ça sera sa moitié")))
+(defexamples ascii?-test
+  (str/ascii? "ascii") "ascii"
+  (str/ascii? "Et ça sera sa moitié") nil)
 
 (defspec slug-contains-only-ascii-chars 100
   (prop/for-all [s (gen/not-empty gen/string)]
@@ -502,10 +489,9 @@
   (prop/for-all [s (gen/not-empty gen/string)]
     (is (not (re-matches #"[^A-Za-z0-9_.~-]+" (str/slug s))))))
 
-(deftest slug-test
-  (are [expected actual] (= expected actual)
-    "this-that-the-other-various-outre-considerations"
-    (str/slug "This, That & the Other! Various Outré   Considerations")))
+(defexamples slug-test
+  (str/slug "This, That & the Other! Various Outré   Considerations")
+  "this-that-the-other-various-outre-considerations")
 
 (defspec mixed-case-is-true-for-mixed-case-strings 100
   (prop/for-all [s1 (gen/not-empty gen/string)
@@ -516,10 +502,9 @@
   (prop/for-all [s string-ascii]
     (is (not (str/mixed-case? (str/upper-case s))))))
 
-(deftest mixed-case?-test
-  (are [expected actual] (= expected actual)
-    "FooBar" (str/mixed-case? "FooBar")
-    nil (str/mixed-case? "foo")))
+(defexamples mixed-case?-test
+  (str/mixed-case? "FooBar") "FooBar"
+  (str/mixed-case? "foo") nil)
 
 (def whitespace
   (gen/fmap #(apply str %)
@@ -533,12 +518,11 @@
     (is (= (+ (.length s) 2)
            (.length (str/collapse-whitespace (str ws1 s ws2)))))))
 
-(deftest collapse-whitespace-test
-  (are [expected actual] (= expected actual)
-    "foo bar baz" (str/collapse-whitespace "foo
+(defexamples collapse-whitespace-test
+  (str/collapse-whitespace "foo
 
-bar    	baz")
-    " foo bar baz " (str/collapse-whitespace " foo bar baz ")))
+bar    	baz") "foo bar baz"
+(str/collapse-whitespace " foo bar baz ") " foo bar baz ")
 
 (defspec levenshtein-distance-is-at-least-difference-between-string-lenghts 100
   (prop/for-all [s1 (gen/not-empty gen/string)
@@ -572,48 +556,44 @@ bar    	baz")
         (+ (str/distance s1 s3)
            (str/distance s2 s3)))))
 
-(deftest distance-test
-  (are [expected actual] (= expected actual)
-    0 (str/distance "foo" "foo")
-    0 (str/distance "foo" "foo" :levenshtein)
-    1 (str/distance "foo" "fo")
-    3 (str/distance "karolin" "kathrin" :hamming)
-    3 (str/distance "karolin" "kerstin" :hamming)
-    2 (str/distance "1011101" "1001001" :hamming)
-    3 (str/distance "2173896" "2233796" :hamming)
-    3 (str/distance "foo" "foobar" :hamming)))
+(defexamples distance-test
+  (str/distance "foo" "foo") 0
+  (str/distance "foo" "foo" :levenshtein) 0
+  (str/distance "foo" "fo") 1
+  (str/distance "karolin" "kathrin" :hamming) 3
+  (str/distance "karolin" "kerstin" :hamming) 3
+  (str/distance "1011101" "1001001" :hamming) 2
+  (str/distance "2173896" "2233796" :hamming) 3
+  (str/distance "foo" "foobar" :hamming) 3)
 
 (deftest distance-throws-on-unknown
   (is (thrown? IllegalArgumentException (str/distance :unknown-algorithm))))
 
 (deftest longest-common-substring
-  (are [expected actual] (= expected actual)
-    #{"foo" "bar"} (str/longest-common-substring "fooquxbar" "foobar")
-    #{"bar"} (str/longest-common-substring "FOOquxbar" "foobar")
-    #{} (str/longest-common-substring "foo" "bar")))
+  (str/longest-common-substring "fooquxbar" "foobar") #{"foo" "bar"}
+  (str/longest-common-substring "FOOquxbar" "foobar") #{"bar"}
+  (str/longest-common-substring "foo" "bar") #{})
 
 (defspec finds-common-substring 100
   (prop/for-all [s1 (gen/such-that #(< (count %) 5) (gen/not-empty gen/string)
-                                   500)
+                                   1000)
                  s2 (gen/such-that #(< (count %) 5) (gen/not-empty gen/string)
-                                   500)
+                                   1000)
                  lcs (gen/such-that #(> (count %) 5) (gen/not-empty gen/string)
-                                    500)]
+                                    1000)]
     (is ((str/longest-common-substring (str s1 lcs) (str lcs s2)) lcs))))
 
 (defspec length-test 100
   (prop/for-all [s gen/string]
     (is (= (.length s) (str/length s)))))
 
-(deftest index-of-test
-  (are [expected actual] (= expected actual)
-    0 (str/index-of "foo" "foo")
-    nil (str/index-of "foo" "bar")))
+(defexamples index-of-test
+  (str/index-of "foo" "foo") 0
+  (str/index-of "foo" "bar") nil)
 
-(deftest last-index-of-test
-  (are [expected actual] (= expected actual)
-    nil (str/last-index-of "foo" "bar")
-    3 (str/last-index-of "foofoo" "foo")))
+(defexamples last-index-of-test
+  (str/last-index-of "foo" "bar") nil
+  (str/last-index-of "foofoo" "foo") 3)
 
 (deftest added-metadata-is-removed-from-aliased-vars
   (is (not (:added (meta #'str/trim)))))

@@ -305,7 +305,7 @@
   (prop/for-all [before (gen/not-empty gen/string)
                  needle (gen/not-empty gen/string)
                  after (gen/not-empty gen/string)]
-    (is (str/contains-any? (str before needle after) [needle]))))
+    (str/contains-any? (str before needle after) [needle])))
 
 (defspec contains-any-can-ignore-case 100
   (prop/for-all [before (gen/not-empty gen/string)
@@ -373,21 +373,21 @@
 
 (defspec title-case-starts-with-upper 100
   (prop/for-all [s (gen/not-empty gen/string)]
-    (is (upper-if-upper-exists? (first (str/title-case s))))))
+    (upper-if-upper-exists? (first (str/title-case s)))))
 
 (defspec title-case-rest-is-all-lower-case 100
   (prop/for-all [s (gen/not-empty gen/string)]
-    (is (reduce (fn [acc c] (and acc (lower-if-lower-exists? c))) true
-                (rest (str/title-case s))))))
+    (reduce (fn [acc c] (and acc (lower-if-lower-exists? c))) true
+            (rest (str/title-case s)))))
 
 (defspec upper-case?-returns-true-on-all-upper 100
   (prop/for-all [s (gen/not-empty gen/string)]
-    (is (str/upper-case? (str/upper-case s)))))
+    (str/upper-case? (str/upper-case s))))
 
 (defspec upper-case?-returns-nil-on-all-lower 100
   (prop/for-all [s (gen/such-that not-empty
                                   (gen/fmap str/join (gen/vector gen/char-alpha)))]
-    (is (not (str/upper-case? (str/lower-case s))))))
+    (not (str/upper-case? (str/lower-case s)))))
 
 (deftest upper-case-test
   (str/upper-case? "UPPER") "UPPER"
@@ -395,12 +395,12 @@
 
 (defspec lower-case?-returns-true-on-all-lower 100
   (prop/for-all [s (gen/not-empty gen/string)]
-    (is (str/lower-case? (str/lower-case s)))))
+    (str/lower-case? (str/lower-case s))))
 
 (defspec lower-case?-returns-nil-on-all-upper 100
   (prop/for-all [s (gen/such-that not-empty
                                   (gen/fmap str/join (gen/vector gen/char-alpha)))]
-    (is (not (str/lower-case? (str/upper-case s))))))
+    (not (str/lower-case? (str/upper-case s)))))
 
 (defn- word []
   (gen/fmap #(if (< (.length %) 10)
@@ -415,10 +415,10 @@
   (prop/for-all [words (gen/bind (gen/choose 50 500)
                                  #(gen/return (gen/sample (word) %)))
                  width (gen/choose 8 80)]
-    (is (reduce (fn [acc line]
-                  (and acc (less-than-width-or-unbreakable line width)))
-                true
-                (str/split-lines (str/wrap-words (str/join " " words) width))))))
+    (reduce (fn [acc line]
+              (and acc (less-than-width-or-unbreakable line width)))
+            true
+            (str/split-lines (str/wrap-words (str/join " " words) width)))))
 
 (defexamples lower-case-test
   (str/lower-case? "upper") "upper"
@@ -426,8 +426,8 @@
 
 (defspec lisp-case-is-all-lower 100
   (prop/for-all [s (gen/not-empty gen/string)]
-    (is (reduce (fn [acc c] (and acc (lower-if-lower-exists? c))) true
-                (str/lisp-case s)))))
+    (reduce (fn [acc c] (and acc (lower-if-lower-exists? c))) true
+            (str/lisp-case s))))
 
 (defexamples lisp-case-test
   (str/lisp-case "PascalCase") "pascal-case"
@@ -474,7 +474,7 @@
 
 (defspec ascii?-returns-s-on-ascii-strings 100
   (prop/for-all [s (gen/not-empty gen/string-ascii)]
-    (is (= s (str/ascii? s)))))
+    (= s (str/ascii? s))))
 
 (defexamples ascii?-test
   (str/ascii? "ascii") "ascii"
@@ -482,19 +482,19 @@
 
 (defspec slug-contains-only-ascii-chars 100
   (prop/for-all [s (gen/not-empty gen/string)]
-    (is (str/ascii? (str/slug s)))))
+    (str/ascii? (str/slug s))))
 
 (defspec slug-contains-no-whitespace 100
   (prop/for-all [s (gen/not-empty gen/string)]
-    (is (not (re-find #"\s+" (str/slug s))))))
+    (not (re-find #"\s+" (str/slug s)))))
 
 (defspec slug-is-all-lower 100
   (prop/for-all [s (gen/not-empty gen/string)]
-    (is (str/lower-case? (str/slug s)))))
+    (str/lower-case? (str/slug s))))
 
 (defspec slug-only-contains-unreserved-characters 100
   (prop/for-all [s (gen/not-empty gen/string)]
-    (is (not (re-matches #"[^A-Za-z0-9_.~-]+" (str/slug s))))))
+    (not (re-matches #"[^A-Za-z0-9_.~-]+" (str/slug s)))))
 
 (defexamples slug-test
   (str/slug "This, That & the Other! Various Outré   Considerations")
@@ -528,8 +528,8 @@
   (prop/for-all [s (gen/not-empty gen/string-alphanumeric)
                  ws1 (gen/not-empty whitespace)
                  ws2 (gen/not-empty whitespace)]
-    (is (= (+ (.length s) 2)
-           (.length (str/collapse-whitespace (str ws1 s ws2)))))))
+    (= (+ (.length s) 2)
+       (.length (str/collapse-whitespace (str ws1 s ws2))))))
 
 (defexamples collapse-whitespace-test
   (str/collapse-whitespace "foo
@@ -540,25 +540,25 @@ bar    	baz") "foo bar baz"
 (defspec levenshtein-distance-is-at-least-difference-between-string-lenghts 100
   (prop/for-all [s1 (gen/not-empty gen/string)
                  s2 (gen/not-empty gen/string)]
-    (is (>= (str/distance s1 s2)
-            (- (max (.length s1) (.length s2))
-               (min (.length s1) (.length s2)))))))
+    (>= (str/distance s1 s2)
+        (- (max (.length s1) (.length s2))
+           (min (.length s1) (.length s2))))))
 
 (defspec levenshtein-distance-is-at-most-length-of-longest-string 100
   (prop/for-all [s1 (gen/not-empty gen/string)
                  s2 (gen/not-empty gen/string)]
-    (is (<= (str/distance s1 s2)
-            (max (.length s1) (.length s2))))))
+    (<= (str/distance s1 s2)
+        (max (.length s1) (.length s2)))))
 
 (defspec levenshtein-distance-is-zero-for-equal-strings 100
   (prop/for-all [s (gen/not-empty gen/string)]
-    (is (= 0 (str/distance s s)))))
+    (= 0 (str/distance s s))))
 
 (defspec levenshtein-distance-is-zero-means-equal-strings 100
   (prop/for-all [s1 (gen/not-empty gen/string)
                  s2 (gen/not-empty gen/string)]
     (if (= (str/distance s1 s2) 0)
-      (is (= s1 s2))
+      (= s1 s2)
       true)))
 
 (defspec levenshtein-triangle 100
@@ -598,7 +598,7 @@ bar    	baz") "foo bar baz"
 
 (defspec length-test 100
   (prop/for-all [s gen/string]
-    (is (= (.length s) (str/length s)))))
+    (= (.length s) (str/length s))))
 
 (defexamples index-of-test
   (str/index-of "foo" "foo") 0

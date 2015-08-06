@@ -127,7 +127,7 @@
   ([^String s ^String prefix ignore-case]
    (if-not ignore-case
      (starts-with? s prefix)
-     (let [beg (substring s 0 (length prefix))]
+     (let [beg (substring s 0 (min (length s) (length prefix)))]
        (when (.equalsIgnoreCase beg prefix)
          s)))))
 

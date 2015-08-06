@@ -65,6 +65,9 @@
                  suffix gen/string]
     (str/ends-with? (str s suffix ) (str/swap-case suffix) :ignore-case)))
 
+(defexamples starts-with?
+  nil (str/starts-with? "foo" "foobar"))
+
 (defspec starts-with?-acts-like-startsWith 100
   (prop/for-all [s gen/string
                  prefix gen/string]

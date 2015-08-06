@@ -120,13 +120,12 @@
           cases2 (map case-to-int (str/swap-case s))]
       (apply = 0 (map + cases1 cases2)))))
 
-(deftest swap-case
-  (are [expected actual] (= expected actual)
-    "Foo" (str/swap-case "fOO" )
-    "foo" (str/swap-case "FOO")
-    "åÅBERG" (str/swap-case "Ååberg")
-    "æÆå." (str/swap-case "ÆæÅ.")
-    "SS" (str/swap-case "ß")))
+(defexamples swap-case
+  (str/swap-case "fOO" ) "Foo"
+  (str/swap-case "FOO") "foo"
+  (str/swap-case "Ååberg") "åÅBERG"
+  (str/swap-case "ÆæÅ.") "æÆå."
+  (str/swap-case "ß") "SS")
 
 (defspec slice-without-end-has-length-1 100
   (prop/for-all [[s i] (gen/bind (gen/not-empty gen/string)
@@ -182,23 +181,21 @@
           width (second vals)]
       (= (.length (str/pad-right s width)) width))))
 
-(deftest right-pad
-  (are [expected actual] (= expected actual)
-    "" (str/pad-right "" 0)
-    " " (str/pad-right "" 1)
-    "foo "(str/pad-right "foo" 4)
-    "foo  " (str/pad-right "foo" 5)
-    "foo.!" (str/pad-right "foo" 5 ".!")
-    "foo.!." (str/pad-right "foo" 6 ".!")))
+(defexamples right-pad
+  (str/pad-right "" 0) ""
+  (str/pad-right "" 1) " "
+  (str/pad-right "foo" 4) "foo "
+  (str/pad-right "foo" 5) "foo  "
+  (str/pad-right "foo" 5 ".!") "foo.!"
+  (str/pad-right "foo" 6 ".!") "foo.!.")
 
-(deftest left-pad
-  (are [expected actual] (= expected actual)
-    "" (str/pad-left "" 0)
-    " " (str/pad-left "" 1)
-    " foo"(str/pad-left "foo" 4)
-    "  foo" (str/pad-left "foo" 5)
-    ".!foo" (str/pad-left "foo" 5 ".!")
-    ".!.foo" (str/pad-left "foo" 6 ".!")))
+(defexamples left-pad
+  (str/pad-left "" 0) ""
+  (str/pad-left "" 1) " "
+  (str/pad-left "foo" 4) " foo"
+  (str/pad-left "foo" 5) "  foo"
+  (str/pad-left "foo" 5 ".!") ".!foo"
+  (str/pad-left "foo" 6 ".!") ".!.foo")
 
 (defspec left-pad-results-in-strings-with-new-width 100
   (prop/for-all
@@ -393,9 +390,8 @@
     (is (not (str/upper-case? (str/lower-case s))))))
 
 (deftest upper-case-test
-  (are [expected actual] (= expected actual)
-    "UPPER" (str/upper-case? "UPPER")
-    "123UPPER!" (str/upper-case? "123UPPER!")))
+  (str/upper-case? "UPPER") "UPPER"
+  (str/upper-case? "123UPPER!") "123UPPER!")
 
 (defspec lower-case?-returns-true-on-all-lower 100
   (prop/for-all [s (gen/not-empty gen/string)]

@@ -164,8 +164,9 @@
   [^String s]
   (let [invert-case (fn [c]
                       (cond
-                        (Character/isLowerCase c) (Character/toUpperCase c)
                         (Character/isUpperCase c) (Character/toLowerCase c)
+                        (= c \ß) "SS" ; this uppers to itself
+                        (Character/isLowerCase c) (Character/toUpperCase c)
                         :else c))]
     (->> s (map invert-case) (apply str))))
 

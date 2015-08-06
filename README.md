@@ -33,6 +33,28 @@ A ton of functions, either on `String`, or elsewhere, return `true` as the truth
         send-unsolicited-job-offer)
 ```
 
+## Quirks
+
+The character `ß` is a lower case, german, character that is shorthand
+for `ss`.  This character is, to my knowledge, exceptional in that it
+upper cases to a combination of two characters.  Frankly, this
+annoying character should be deprecated, but in the meanwhile we
+should try to treat it in a consistent manner.
+
+The jvm has the following behavior:
+
+```clj
+(Character/toUppercase \ß) ;;=> \ß
+(.toUppercase "ß") ;;=> "SS"
+(.equalsIgnoreCase "ß" "ss") ;;=> false
+```
+
+I'm interpreting this to mean:
+
+1. String comparisons ignoring case should not treat `ß` and `ss` or
+`SS` as equal.
+2. Any string operations which change the case, should consider `SS` to be the upper case variant of `ß`.
+
 ## License
 
 Copyright &copy; 2015 Lars Andersen

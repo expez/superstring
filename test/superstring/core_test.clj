@@ -60,13 +60,24 @@
     (= (.endsWith (str s suffix) suffix)
        (if (str/ends-with? (str s suffix) suffix) true false))))
 
+(def string-without-german-b (gen/such-that (fn [s] (not (str/contains? s "ß")))
+                                            gen/string))
+
 (defspec ends-with?-can-ignore-case 100
   (prop/for-all [s gen/string
-                 suffix gen/string]
+                 suffix string-without-german-b]
     (str/ends-with? (str s suffix ) (str/swap-case suffix) :ignore-case)))
 
+(defexamples ends-with?
+  nil (str/ends-with? "ß" "ss" :ignore-case)
+  nil (str/ends-with? "ß" "SS" :ignore-case)
+  "aß" (str/ends-with? "aß" "ß" :ignore-case))
+
 (defexamples starts-with?
-  nil (str/starts-with? "foo" "foobar"))
+  nil (str/starts-with? "foo" "foobar")
+  nil (str/starts-with? "ß" "ss" :ignore-case)
+  nil (str/starts-with? "ß" "SS" :ignore-case)
+  "ßa" (str/starts-with? "ßa" "ß" :ignore-case))
 
 (defspec starts-with?-acts-like-startsWith 100
   (prop/for-all [s gen/string
@@ -76,7 +87,7 @@
 
 (defspec starts-with?-can-ignore-case 100
   (prop/for-all [s gen/string
-                 prefix gen/string]
+                 prefix string-without-german-b]
     (str/starts-with? (str prefix s) (str/swap-case prefix) :ignore-case)))
 
 (defspec chop-reduces-length-by-1-without-cr 100
@@ -90,10 +101,6 @@
 
 (deftest chopping-the-empty-string-is-a-no-op []
   (is (= (str/chop "") "")))
-
-(defspec swap-case-does-not-change-length 100
-  (prop/for-all [s gen/string]
-    (= (.length (str/swap-case s)) (.length s))))
 
 (defn- case-to-int [c]
   ;; some chars, like \ß, are lower-case but upcase to themselves
@@ -118,7 +125,8 @@
     "Foo" (str/swap-case "fOO" )
     "foo" (str/swap-case "FOO")
     "åÅBERG" (str/swap-case "Ååberg")
-    "æÆå." (str/swap-case "ÆæÅ.")))
+    "æÆå." (str/swap-case "ÆæÅ.")
+    "SS" (str/swap-case "ß")))
 
 (defspec slice-without-end-has-length-1 100
   (prop/for-all [[s i] (gen/bind (gen/not-empty gen/string)

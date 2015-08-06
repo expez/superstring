@@ -528,23 +528,13 @@
       (.replaceAll "-+" "-")
       lower-case))
 
-(defn- upper-if-upper-exists?
-  "Is c uppercase for those characters which have an upper case version?"
-  [^Character c]
-  (or (Character/isUpperCase c) (= c (Character/toUpperCase c))))
-
-(defn- lower-if-lower-exists?
-  "Is c lower for those characters which have an lower case version?"
-  [^Character c]
-  (or (Character/isLowerCase c) (= c (Character/toLowerCase c))))
-
 (defn ^String mixed-case?
-  "Return s if s contains both upper and lower case letters. "
+  "Return s if s contains both upper and lower case letters."
   [^String s]
   {:pre [(string? s)]
    :post [(or (nil? %) (string? %))]}
-  (when (and (seq (drop-while (complement upper-if-upper-exists?) s))
-             (seq (drop-while (complement lower-if-lower-exists?) s)))
+  (when (and (seq (filter #(Character/isLowerCase %) s))
+             (seq (filter #(Character/isUpperCase %) s)))
     s))
 
 (defn ^String collapse-whitespace

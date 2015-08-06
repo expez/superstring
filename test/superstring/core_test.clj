@@ -504,16 +504,22 @@
   (str/slug "This, That & the Other! Various Outré   Considerations")
   "this-that-the-other-various-outre-considerations")
 
+(def string-alpha
+  (gen/fmap #(apply str %) (gen/vector gen/char-alpha)))
+
 (defspec mixed-case-is-true-for-mixed-case-strings 100
-  (prop/for-all [s1 (gen/not-empty gen/string)
-                 s2 (gen/not-empty gen/string)]
-    (is (str/mixed-case? (str (str/upper-case s1) (str/lower-case s2))))))
+  (prop/for-all [s1 (gen/not-empty string-alpha)
+                 s2 (gen/not-empty string-alpha)]
+    (str/mixed-case? (str (str/upper-case s1) (str/lower-case s2)))))
 
 (defspec mixed-case-is-false-for-upper-case-strings 100
   (prop/for-all [s string-ascii]
-    (is (not (str/mixed-case? (str/upper-case s))))))
+    (not (str/mixed-case? (str/upper-case s)))))
 
 (defexamples mixed-case?-test
+  (str/mixed-case? "1aB") "1aB"
+  (str/mixed-case? "1B") nil
+  (str/mixed-case? "1234") nil
   (str/mixed-case? "FooBar") "FooBar"
   (str/mixed-case? "foo") nil)
 

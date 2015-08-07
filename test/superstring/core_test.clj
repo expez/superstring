@@ -69,15 +69,16 @@
     (str/ends-with? (str s suffix ) (str/swap-case suffix) :ignore-case)))
 
 (defexamples ends-with?
-  nil (str/ends-with? "ß" "ss" :ignore-case)
-  nil (str/ends-with? "ß" "SS" :ignore-case)
-  "aß" (str/ends-with? "aß" "ß" :ignore-case))
+  (str/ends-with? "foobar" "foo") nil
+  (str/ends-with? "ß" "ss" :ignore-case) nil
+  (str/ends-with? "ß" "SS" :ignore-case) nil
+  (str/ends-with? "aß" "ß" :ignore-case) "aß")
 
 (defexamples starts-with?
-  nil (str/starts-with? "foo" "foobar")
-  nil (str/starts-with? "ß" "ss" :ignore-case)
-  nil (str/starts-with? "ß" "SS" :ignore-case)
-  "ßa" (str/starts-with? "ßa" "ß" :ignore-case))
+  (str/starts-with? "foo" "foobar") nil
+  (str/starts-with? "ß" "ss" :ignore-case) nil
+  (str/starts-with? "ß" "SS" :ignore-case) nil
+  (str/starts-with? "ßa" "ß" :ignore-case) "ßa")
 
 (defspec starts-with?-acts-like-startsWith 100
   (prop/for-all [s gen/string
@@ -115,10 +116,13 @@
       0)))
 
 (defspec swap-case-changes-case 100
-  (prop/for-all [s gen/string]
-    (let [cases1 (map case-to-int s)
-          cases2 (map case-to-int (str/swap-case s))]
-      (apply = 0 (map + cases1 cases2)))))
+  (prop/for-all [s string-without-german-b]
+    (let [count-uppers (partial reduce (fn [acc c] (if (str/upper-case? (str c))
+                                                     (inc acc) 0)) 0)
+          count-lowers (partial reduce (fn [acc c] (if (str/lower-case? (str c))
+                                                     (inc acc) 0)) 0)]
+      (and (= (count-uppers s) (count-lowers (str/swap-case s)))
+           (= (count-lowers s) (count-uppers (str/swap-case s)))))))
 
 (defexamples swap-case
   (str/swap-case "fOO" ) "Foo"
@@ -282,11 +286,9 @@
                  after gen/string]
     (str/contains? (str before needle after) needle :ignore-case)))
 
-(defexamples contains-all?
+(defexamples contains-all-test?
   (str/contains-all? "" []) ""
   (str/contains-all? "" [""]) ""
-  (str/contains-all? "" [nil]) nil
-  (str/contains-all? nil [""]) nil
   (str/contains-all? "12" ["1" "2"]) "12"
   (str/contains-all? "foo" ["fo" "o"]) "foo"
   (str/contains-all? "foobar" ["qux"]) nil
@@ -295,7 +297,7 @@
   (str/contains-all? "foobar" ["BAR" "Foo"] :ignore-case) "foobar"
   (str/contains-all? "Albert Åberg" ["åberg" "al"] :ignore-case)   "Albert Åberg")
 
-(defspec contains-all? 100
+(defspec contains-all-finds-generated-strings? 100
   (prop/for-all [s1 gen/string
                  s2 gen/string
                  s3 gen/string]

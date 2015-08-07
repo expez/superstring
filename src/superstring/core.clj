@@ -148,7 +148,10 @@
 
   If the string ends with \\r\\n, both characters are removed.
 
-  Applying chop to an empty string is a no-op."
+  Applying chop to an empty string is a no-op.
+
+  chomp is often a safer alternative, as it leaves the string
+  unchanged if it doesn’t end in a record separator."
   [^String s]
   {:pre [(string? s)]
    :post [(string? %)]}

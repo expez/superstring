@@ -378,11 +378,7 @@
    (if-not ignore-case
      (common-prefix s1 s2)
      (->> s1
-          (map #(when (or (= %1 %2)
-                          (= (Character/toUpperCase %1) %2)
-                          (= (Character/toLowerCase %1) %2))
-                  %1)
-               s2)
+          (map char-equal-ignore-case s2)
           (take-while (complement nil?))
           (apply str)))))
 
@@ -391,23 +387,13 @@
   ([^String s1 ^String s2]
    {:pre [(string? s1) (string? s2)]
     :post [(string? %)]}
-   (->> s1
-        reverse
-        (map #(when (= %1 %2) %1) (reverse s2))
-        (take-while (complement nil?))
-        (apply str)
-        reverse))
+   (->> s1 reverse (common-prefix (reverse s2)) reverse))
   ([^String s1 ^String s2 ignore-case]
    {:pre [(string? s1) (string? s2)]
     :post [(string? %)]}
    (if-not ignore-case
      (common-suffix s1 s2)
-     (->> s1
-          reverse
-          (map char-equal-ignore-case (reverse s2))
-          (take-while (complement nil?))
-          (apply str)
-          reverse))))
+     (-> s1 reverse (common-prefix (reverse s2) :ignore-case) reverse))))
 
 (defn- upper-exists?
   "Does c exist in an upper case version?"

@@ -92,8 +92,12 @@
   Returns nil if index falls outside the string boundaries or if
   length is negative."
   ([^String s index]
+   {:pre [(string? s) (integer? index)]
+    :post [(or (string? %) (nil? %))]}
    (slice s index 1))
   ([^String s ^long index length]
+   {:pre [(string? s) (integer? index) (integer? length)]
+    :post [(or (string? %) (nil? %))]}
    (cond
      (neg? length) nil
      (neg? (+ (superstring.core/length s) index))
@@ -108,9 +112,13 @@
 (defn ^String ends-with?
   "Return s if s ends with suffix."
   ([^String s ^String suffix]
+   {:pre [(string? s) (string? suffix)]
+    :post [(or (string? %) (nil? %))]}
    (when (.endsWith s suffix)
      s))
   ([^String s ^String suffix ignore-case]
+   {:pre [(string? s) (string? suffix)]
+    :post [(or (string? %) (nil? %))]}
    (if-not ignore-case
      (ends-with? s suffix)
      (let [end (substring s (max 0 (- (length s) (length suffix))))]
@@ -122,9 +130,13 @@
 
   If a third argument is provided the string comparison is insensitive to case."
   ([^String s ^String prefix]
+   {:pre [(string? s) (string? prefix)]
+    :post [(or (string? %) (nil? %))]}
    (when (.startsWith s prefix)
      s))
   ([^String s ^String prefix ignore-case]
+   {:pre [(string? s) (string? prefix)]
+    :post [(or (string? %) (nil? %))]}
    (if-not ignore-case
      (starts-with? s prefix)
      (let [beg (substring s 0 (min (length s) (length prefix)))]
@@ -138,6 +150,8 @@
 
   Applying chop to an empty string is a no-op."
   [^String s]
+  {:pre [(string? s)]
+   :post [(string? %)]}
   (if (.endsWith s "\r\n")
     (substring s 0 (- (length s) 2))
     (substring s 0 (max 0 (dec (length s))))))
@@ -149,12 +163,16 @@
   If separator is not provided chomp will remove \\n, \\r or \\r\\n from
   the end of s."
   ([^String s]
+   {:pre [(string? s)]
+    :post [(string? %)]}
    (cond
      (.endsWith s "\r\n") (substring s 0 (- (length s) 2))
      (.endsWith s "\r") (substring s 0 (dec (length s)))
      (.endsWith s "\n") (substring s 0 (dec (length s)))
      :else s))
   ([^String s ^String separator]
+   {:pre [(string? s) (string? separator)]
+    :post [(string? %)]}
    (if (.endsWith s separator)
      (substring s 0 (- (length s) (length separator)))
      s)))
@@ -162,6 +180,8 @@
 (defn ^String swap-case
   "Change lower case characters to upper case and vice versa."
   [^String s]
+  {:pre [(string? s)]
+   :post [(string? %)]}
   (let [invert-case (fn [c]
                       (cond
                         (Character/isUpperCase c) (Character/toLowerCase c)
@@ -185,6 +205,8 @@
   "Pad the end of s with padding, or spaces, until the length of s matches
   width."
   ([^String s width]
+   {:pre [(string? s) (integer? width)]
+    :post [(string? %)]}
    (pad-right s width " "))
   ([^String s width ^String padding]
    {:pre [(not-empty padding)
@@ -198,6 +220,8 @@
   "Pad the beginning of s with padding, or spaces, until the length of
   s matches width."
   ([^String s width]
+   {:pre [(string? s) (integer? width)]
+    :post [(string? %)]}
    (pad-left s width " "))
   ([^String s width ^String padding]
    {:pre [(not-empty padding)
@@ -211,6 +235,8 @@
   "Pad both ends of s with padding, or spaces, until the length of s
   matches width."
   ([^String s width]
+   {:pre [(string? s) (integer? width)]
+    :post [(string? %)]}
    (center s width " "))
   ([^String s width ^String padding]
    {:pre [(not-empty padding)
@@ -231,11 +257,13 @@
 
   Otherwise return s."
   ([^String s ^String suffix]
+   {:pre [(string? s) (string? suffix)]
+    :post [(string? %)]}
    (chop-suffix s suffix false))
   ([^String s ^String suffix ignore-case]
-   {:pre [(not (nil? s))
-          (not (nil? suffix))]
-    :post [(not (nil? %))]}
+   {:pre [(string? s)
+          (string? suffix)]
+    :post [(string? %)]}
    (if (and (>= (length s) (length suffix))
             (ends-with? s suffix ignore-case))
      (substring s 0 (- (length s) (length suffix)))
@@ -246,11 +274,12 @@
 
   Otherwise return s."
   ([^String s ^String prefix]
+   {:pre [(string? s) (string? prefix)]
+    :post [(string? %)]}
    (chop-prefix s prefix false))
   ([^String s ^String prefix ignore-case]
-   {:pre [(not (nil? s))
-          (not (nil? prefix))]
-    :post [(not (nil? %))]}
+   {:pre [(string? s) (string? prefix)]
+    :post [(string? %)]}
    (if (and (>= (length s) (length prefix))
             (starts-with? s prefix ignore-case))
      (substring s (length prefix))
@@ -277,8 +306,12 @@
 (defn ^String contains?
   "Return s if s contains needle."
   ([^String s ^String needle]
+   {:pre [(string? s) (string? needle)]
+    :post [(or (string? %) (nil? %))]}
    (case-sensitive-contains s needle))
   ([^String s ^String needle ignore-case]
+   {:pre [(string? s) (string? needle)]
+    :post [(or (string? %) (nil? %))]}
    (if ignore-case
      (case-insensitive-contains s needle)
      (case-sensitive-contains s needle))))
@@ -286,9 +319,13 @@
 (defn ^String contains-all?
   "Return s if s contains all needles."
   ([^String s needles]
+   {:pre [(string? s) (every? string? needles)]
+    :post [(or (string? %) (nil? %))]}
    (when (every? (partial case-sensitive-contains s) needles)
      s))
   ([^String s needles ignore-case]
+   {:pre [(string? s) (every? string? needles)]
+    :post [(or (string? %) (nil? %))]}
    (if ignore-case
      (when (every? (partial case-insensitive-contains s) needles)
        s)
@@ -297,8 +334,12 @@
 (defn ^String contains-any?
   "Return s if s contains any of the needles."
   ([^String s needles]
+   {:pre [(string? s) (every? string? needles)]
+    :post [(or (string? %) (nil? %))]}
    (some (partial case-sensitive-contains s) needles))
   ([^String s needles ignore-case]
+   {:pre [(string? s) (every? string? needles)]
+    :post [(or (string? %) (nil? %))]}
    (if ignore-case
      (some (partial case-insensitive-contains s) needles)
      (contains-any? s needles))))
@@ -306,7 +347,8 @@
 (defn ^String truncate
   "If s is longer than len-3, cut it down to len-3 and append '...'."
   [^String s len]
-  {:pre [(not (nil? s)) (>= len 3)]}
+  {:pre [(string? s) (>= len 3)]
+   :post [(string? s)]}
   (if (> (length s) (max 3 (- len 3)))
     (str (substring s 0 (- len 3)) "...")
     s))
@@ -420,6 +462,8 @@
 (defn wrap-words
   "Insert newlines in s so the length of each line doesn't exceed width."
   [^String s width]
+  {:pre [(string? s) (integer? width)]
+   :post [(string? %)]}
   (->> (split s #"\n|\t|\n| ")
        (remove empty?)
        (reduce

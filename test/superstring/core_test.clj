@@ -255,7 +255,7 @@
   (str/chop-prefix "foo" "F" :ignore-case) "oo"
   (str/chop-prefix "Åfoo" "Å" :ignore-case) "foo")
 
-(defexamples contains-test?
+(defexamples contains?
   (str/contains? "" "") ""
   (str/contains? "1" "1") "1"
   (str/contains? "foo" "fo") "foo"
@@ -286,22 +286,30 @@
                  after gen/string]
     (str/contains? (str before needle after) needle :ignore-case)))
 
-(defexamples contains-all-test?
-  (str/contains-all? "" []) ""
-  (str/contains-all? "" [""]) ""
-  (str/contains-all? "12" ["1" "2"]) "12"
-  (str/contains-all? "foo" ["fo" "o"]) "foo"
-  (str/contains-all? "foobar" ["qux"]) nil
-  (str/contains-all? "foobar" ["foo" "qux"]) nil
-  (str/contains-all? "foobar" ["BAR"]) nil
-  (str/contains-all? "foobar" ["BAR" "Foo"] :ignore-case) "foobar"
-  (str/contains-all? "Albert Åberg" ["åberg" "al"] :ignore-case)   "Albert Åberg")
+(defexamples contains-test?
+  (str/contains? "" "") ""
+  (str/contains? "1" "1") "1"
+  (str/contains? "foo" "fo") "foo"
+  (str/contains? "foobar" "qux") nil
+  (str/contains? "foobar" "BAR") nil
+  (str/contains? "foobar" "BAR" :ignore-case) "foobar"
+  (str/contains? "fooß" "ss" :ignore-case) nil
+  (str/contains? "fooß" "SS" :ignore-case) nil
+  (str/contains? "ß" "SS" :ignore-case) nil
+  (str/contains? "Albert Åberg" "åberg" :ignore-case) "Albert Åberg")
 
 (defspec contains-all-finds-generated-strings? 100
   (prop/for-all [s1 gen/string
                  s2 gen/string
                  s3 gen/string]
     (str/contains-all? (str s1 s2 s3) [s1 s2 s3])))
+
+(defexamples contains-any?
+  (str/contains-any? "foobar" ["foo"]) "foobar"
+  (str/contains-any? "foobar" ["qux"]) nil
+  (str/contains-any? "foobar" ["qux" "bar"]) "foobar"
+  (str/contains-any? "ß" ["ss" "SS"] :ignore-case) nil
+  (str/contains-any? "foobar" ["BAR"] :ignore-case) "foobar")
 
 (defspec contains-any-finds-a-needle 100
   (prop/for-all [before (gen/not-empty gen/string)

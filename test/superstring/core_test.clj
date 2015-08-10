@@ -255,7 +255,7 @@
   (str/chop-prefix "foo" "F" :ignore-case) "oo"
   (str/chop-prefix "Åfoo" "Å" :ignore-case) "foo")
 
-(defexamples contains?
+(defexamples contains-test?
   (str/contains? "" "") ""
   (str/contains? "1" "1") "1"
   (str/contains? "foo" "fo") "foo"

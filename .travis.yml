@@ -1,8 +1,8 @@
 language: clojure
 script:
-  - lein2 with-profile +1.5 test
-  - lein2 with-profile +1.6 test
-  - lein2 with-profile +1.7 test
+  - lein2 test superstring.core-test
+  - ./scripts/build
+  - node ./out/tests.js
 jdk:
   - openjdk7
   - oraclejdk7

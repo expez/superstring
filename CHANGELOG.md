@@ -1,8 +1,11 @@
+
 # Changelog
 
 ## master (unreleased)
 
 ### New features
+
+* clojurescript support
 
 ### Bugs fixed
 

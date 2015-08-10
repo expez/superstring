@@ -9,3 +9,6 @@ pom.xml.asc
 /.nrepl-port
 /doc
 /update-docs.sh
+/.cljs_*/
+/nashorn_code_cache/
+/out/

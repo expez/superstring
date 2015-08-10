@@ -1,66 +1,38 @@
 (ns superstring.core-test
-  (:require [clojure.test :refer :all]
-            [clojure.test.check
-             [clojure-test :refer [defspec]]
-             [generators :as gen]
-             [properties :as prop]]
-            [superstring.core :as str]))
+  #?@(:cljs [(:require
+              [cljs.test :as t :include-macros true]
+              [cljs.test.check.cljs-test :refer-macros [defspec]]
+              [cljs.test.check.generators :as gen]
+              [cljs.test.check.properties :as prop :include-macros true]
+              [cljs.test.check :refer [quick-check]]
+              [superstring.core :as str])
+             (:require-macros [superstring.test-helpers :refer [defexamples]])]
+            :clj [(:require [clojure.test :as t]
+                            [clojure.test.check
+                             [clojure-test :refer [defspec]]
+                             [generators :as gen]
+                             [properties :as prop]]
+                            [superstring.test-helpers :refer [defexamples]]
+                            [superstring.core :as str])]))
 
-(defmacro defexamples [name & examples]
-  `(deftest ~name
-     (are [actual expected] (= actual expected)
-       ~@examples)))
-
-(defspec appending-separator-and-chomping-does-not-alter-length 100
-  (prop/for-all [s gen/string
-                 sep gen/string]
-    (let [res (str/chomp s)]
-      (= (count (str/chomp (str s sep) sep))
-         (count s)))))
-
-(defspec chomping-string-not-ending-in-seperator-does-not-alter-length 100
-  (prop/for-all
-      [[sep s] (gen/bind (gen/not-empty gen/string)
-                         (fn [sep]
-                           (gen/tuple (gen/return sep)
-                                      (gen/such-that #(not (.endsWith % sep))
-                                                     gen/string))))]
-    (= (count (str/chomp s sep)) (count s))))
-
-(defspec chomp-removes-newline 100
+(defspec length-test 100
   (prop/for-all [s gen/string]
-    (= (.length (str/chomp (str s "\n")))) (.length s)))
+    (= #?(:cljs (.-length s) :clj (.length s)) (str/length s))))
 
-(defspec chomp-removes-carriage-return 100
-  (prop/for-all [s gen/string]
-    (= (.length (str/chomp (str s "\r"))) (.length s))))
+(defexamples index-of-test
+  (str/index-of "foo" "foo") 0
+  (str/index-of "foo" "bar") nil)
 
-(defspec chomp-removes-carriage-return-line-feed 100
-  (prop/for-all [s gen/string]
-    (= (.length (str/chomp (str s "\r\n"))) (.length s))))
+(defexamples last-index-of-test
+  (str/last-index-of "foo" "bar") nil
+  (str/last-index-of "foofoo" "foo") 3)
 
-(defexamples chomp-examples
-  (str/chomp "" "") ""
-  (str/chomp "foo" "foo") ""
-  (str/chomp "foobar" "bar") "foo"
-  (str/chomp "foo\n") "foo"
-  (str/chomp "foo\r") "foo"
-  (str/chomp "foo\r\n") "foo"
-  (str/chomp "foo\n\r") "foo\n")
-
-(defspec ends-with?-acts-like-endsWith 100
+(defspec ends-with?-finds-endings 100
   (prop/for-all [s gen/string
                  suffix gen/string]
-    (= (.endsWith (str s suffix) suffix)
-       (if (str/ends-with? (str s suffix) suffix) true false))))
+    (str/ends-with? (str s suffix) suffix)))
 
-(defspec ends-with?-can-ignore-case 100
-  (prop/for-all [s gen/string
-                 suffix gen/string]
-    (= (.endsWith (str s suffix) suffix)
-       (if (str/ends-with? (str s suffix) suffix) true false))))
-
-(def string-without-german-b (gen/such-that (fn [s] (not (str/contains? s "ß")))
+(def string-without-german-b (gen/such-that (fn [s] (not-any? #(= % \ß) s))
                                             gen/string))
 
 (defspec ends-with?-can-ignore-case 100
@@ -80,40 +52,64 @@
   (str/starts-with? "ß" "SS" :ignore-case) nil
   (str/starts-with? "ßa" "ß" :ignore-case) "ßa")
 
-(defspec starts-with?-acts-like-startsWith 100
-  (prop/for-all [s gen/string
-                 prefix gen/string]
-    (= (.startsWith (str prefix s) prefix)
-       (if (str/starts-with? (str prefix s) prefix) true false))))
-
 (defspec starts-with?-can-ignore-case 100
   (prop/for-all [s gen/string
                  prefix string-without-german-b]
     (str/starts-with? (str prefix s) (str/swap-case prefix) :ignore-case)))
 
+(defspec appending-separator-and-chomping-does-not-alter-length 100
+  (prop/for-all [s gen/string
+                 sep gen/string]
+    (let [res (str/chomp s)]
+      (= (count (str/chomp (str s sep) sep))
+         (count s)))))
+
+(defspec chomping-string-not-ending-in-seperator-does-not-alter-length 100
+  (prop/for-all
+      [[sep s] (gen/bind (gen/not-empty gen/string)
+                         (fn [sep]
+                           (gen/tuple (gen/return sep)
+                                      (gen/such-that (fn [s]
+                                                       (not (str/ends-with? s sep)))
+                                                     gen/string))))]
+    (= (count (str/chomp s sep)) (count s))))
+
+(defspec chomp-removes-newline 100
+  (prop/for-all [s gen/string]
+    (= (str/length (str/chomp (str s "\n")))) (str/length s)))
+
+(defspec chomp-removes-carriage-return 100
+  (prop/for-all [s gen/string]
+    (= (str/length (str/chomp (str s "\r"))) (str/length s))))
+
+(defspec chomp-removes-carriage-return-line-feed 100
+  (prop/for-all [s gen/string]
+    (= (str/length (str/chomp (str s "\r\n"))) (str/length s))))
+
+(defexamples chomp-examples
+  (str/chomp "" "") ""
+  (str/chomp "foo" "foo") ""
+  (str/chomp "foobar" "bar") "foo"
+  (str/chomp "foo\n") "foo"
+  (str/chomp "foo\r") "foo"
+  (str/chomp "foo\r\n") "foo"
+  (str/chomp "foo\n\r") "foo\n")
+
 (defspec chop-reduces-length-by-1-without-cr 100
   (prop/for-all [s (gen/such-that #(not (str/ends-with? % "\r\n")) gen/string)]
-    (= (.length (str/chop s)) (max 0 (dec (.length s))))))
+    (= (str/length (str/chop s)) (max 0 (dec (str/length s))))))
 
 (defspec chop-gets-rid-of-both-chars-in-crlf 100
   (prop/for-all [s gen/string]
     (let [s (str s "\r\n")]
-      (= (.length (str/chop s)) (max 0 (- (.length s) 2))))))
+      (= (str/length (str/chop s)) (max 0 (- (str/length s) 2))))))
 
-(deftest chopping-the-empty-string-is-a-no-op []
-  (is (= (str/chop "") "")))
+(t/deftest chopping-the-empty-string-is-a-no-op []
+  (t/is (= (str/chop "") "")))
 
-(defn- case-to-int [c]
-  ;; some chars, like \ß, are lower-case but upcase to themselves
-  (let [exists-in-upper-and-lower (fn [c]
-                                    (when (or (Character/isUpperCase c)
-                                              (Character/isLowerCase c))
-                                      (if (Character/isUpperCase c)
-                                        (not= c (Character/toUpperCase c))
-                                        (not= c (Character/toLowerCase c)))))]
-    (if (exists-in-upper-and-lower c)
-      (if (Character/isUpperCase c) -1 1)
-      0)))
+(defspec swap-case-does-not-change-length 100
+  (prop/for-all [s string-without-german-b]
+    (= (str/length (str/swap-case s)) (str/length s))))
 
 (defspec swap-case-changes-case 100
   (prop/for-all [s string-without-german-b]
@@ -125,7 +121,7 @@
            (= (count-lowers s) (count-uppers (str/swap-case s)))))))
 
 (defexamples swap-case
-  (str/swap-case "fOO" ) "Foo"
+  (str/swap-case "fOO") "Foo"
   (str/swap-case "FOO") "foo"
   (str/swap-case "Ååberg") "åÅBERG"
   (str/swap-case "ÆæÅ.") "æÆå."
@@ -135,25 +131,25 @@
   (prop/for-all [[s i] (gen/bind (gen/not-empty gen/string)
                                  (fn [s]
                                    (gen/tuple (gen/return s)
-                                              (gen/such-that #(< % (.length s))
+                                              (gen/such-that #(< % (str/length s))
                                                              gen/int 100))))]
-    (= (.length (str/slice s 0)) 1)))
+    (= (str/length (str/slice s 0)) 1)))
 
 (defspec slice-with-length-outside-string 100
   ;; When beg + end falls outside the string we return the rest of the
   ;; string starting from beg
   (prop/for-all [s (gen/not-empty gen/string)]
-    (let [beg (rand-int (.length s))]
-      (= (str/slice s beg (+ (.length s) beg)) (.substring s beg)))))
+    (let [beg (rand-int (str/length s))]
+      (= (str/slice s beg (+ (str/length s) beg)) (str/substring s beg)))))
 
 (defspec slices-with-index-outside-str-is-nil 100
   (prop/for-all [[s index] (gen/bind (gen/not-empty gen/string)
                                      (fn [s]
                                        (gen/tuple
                                         (gen/return s)
-                                        (gen/such-that #(> (Math/abs %) (.length s))
+                                        (gen/such-that #(> (Math/abs %) (str/length s))
                                                        gen/int 100))))]
-    (let [len (inc (rand-int (dec (.length s))))]
+    (let [len (inc (rand-int (dec (str/length s))))]
       (nil? (str/slice s index len)))))
 
 (defspec slices-with-negative-lengths-are-nil 100
@@ -180,10 +176,10 @@
        (gen/bind gen/string
                  (fn [s]
                    (gen/tuple (gen/return s)
-                              (gen/such-that #(> % (.length s)) gen/pos-int 100))))]
+                              (gen/such-that #(> % (str/length s)) gen/pos-int 100))))]
     (let [s (first vals)
           width (second vals)]
-      (= (.length (str/pad-right s width)) width))))
+      (= (str/length (str/pad-right s width)) width))))
 
 (defexamples right-pad
   (str/pad-right "" 0) ""
@@ -207,8 +203,8 @@
        (gen/bind gen/string
                  (fn [s]
                    (gen/tuple (gen/return s)
-                              (gen/such-that #(> % (.length s)) gen/pos-int 100))))]
-    (= (.length (str/pad-left s width)) width)))
+                              (gen/such-that #(> % (str/length s)) gen/pos-int 100))))]
+    (= (str/length (str/pad-left s width)) width)))
 
 (defexamples center
   (str/center "" 0) ""
@@ -226,8 +222,8 @@
        (gen/bind gen/string
                  (fn [s]
                    (gen/tuple (gen/return s)
-                              (gen/such-that #(> % (.length s)) gen/pos-int 100))))]
-    (= (.length (str/center s width)) width)))
+                              (gen/such-that #(> % (str/length s)) gen/pos-int 100))))]
+    (= (str/length (str/center s width)) width)))
 
 (defexamples chop-suffix
   (str/chop-suffix "" "foo") ""
@@ -262,6 +258,9 @@
   (str/contains? "foobar" "qux") nil
   (str/contains? "foobar" "BAR") nil
   (str/contains? "foobar" "BAR" :ignore-case) "foobar"
+  (str/contains? "fooß" "ss" :ignore-case) nil
+  (str/contains? "fooß" "SS" :ignore-case) nil
+  (str/contains? "ß" "SS" :ignore-case) nil
   (str/contains? "Albert Åberg" "åberg" :ignore-case) "Albert Åberg")
 
 (defspec contains?-finds-generated-strings 100
@@ -273,12 +272,18 @@
 (defn- randomly-swapcase
   [s]
   (let [swapcase (fn [c]
-                   (if (Character/isUpperCase c)
-                     (Character/toLowerCase c)
-                     (if (Character/isLowerCase c)
-                       (Character/toUpperCase c)
-                       c)))]
+                   #?(:cljs (if (str/upper-case? c)
+                              (str/lower-case c)
+                              (if (str/lower-case? c)
+                                (str/upper-case c)
+                                c))
+                            :clj (if (Character/isUpperCase c)
+                                   (Character/toLowerCase c)
+                                   (if (Character/isLowerCase c)
+                                     (Character/toUpperCase c)
+                                     c))))]
     (apply str (map #(if (> (rand-int 3) 1) (swapcase %) %) s))))
+
 
 (defspec contains?-can-ignore-case 100
   (prop/for-all [before gen/string
@@ -286,23 +291,22 @@
                  after gen/string]
     (str/contains? (str before needle after) needle :ignore-case)))
 
-(defexamples contains-test?
-  (str/contains? "" "") ""
-  (str/contains? "1" "1") "1"
-  (str/contains? "foo" "fo") "foo"
-  (str/contains? "foobar" "qux") nil
-  (str/contains? "foobar" "BAR") nil
-  (str/contains? "foobar" "BAR" :ignore-case) "foobar"
-  (str/contains? "fooß" "ss" :ignore-case) nil
-  (str/contains? "fooß" "SS" :ignore-case) nil
-  (str/contains? "ß" "SS" :ignore-case) nil
-  (str/contains? "Albert Åberg" "åberg" :ignore-case) "Albert Åberg")
+(defexamples contains-all?
+  (str/contains-all? "" []) ""
+  (str/contains-all? "" [""]) ""
+  (str/contains-all? "12" ["1" "2"]) "12"
+  (str/contains-all? "foo" ["fo" "o"]) "foo"
+  (str/contains-all? "foobar" ["qux"]) nil
+  (str/contains-all? "foobar" ["foo" "qux"]) nil
+  (str/contains-all? "foobar" ["BAR"]) nil
+  (str/contains-all? "foobar" ["BAR" "Foo"] :ignore-case) "foobar"
+  (str/contains-all? "Albert Åberg" ["åberg" "al"] :ignore-case) "Albert Åberg")
 
-(defspec contains-all-finds-generated-strings? 100
-  (prop/for-all [s1 gen/string
-                 s2 gen/string
-                 s3 gen/string]
-    (str/contains-all? (str s1 s2 s3) [s1 s2 s3])))
+(defspec contains-any-finds-a-needle 100
+  (prop/for-all [before (gen/not-empty gen/string)
+                 needle (gen/not-empty gen/string)
+                 after (gen/not-empty gen/string)]
+    (str/contains-any? (str before needle after) [needle])))
 
 (defexamples contains-any?
   (str/contains-any? "foobar" ["foo"]) "foobar"
@@ -311,28 +315,21 @@
   (str/contains-any? "ß" ["ss" "SS"] :ignore-case) nil
   (str/contains-any? "foobar" ["BAR"] :ignore-case) "foobar")
 
-(defspec contains-any-finds-a-needle 100
-  (prop/for-all [before (gen/not-empty gen/string)
-                 needle (gen/not-empty gen/string)
-                 after (gen/not-empty gen/string)]
-    (str/contains-any? (str before needle after) [needle])))
-
 (defspec contains-any-can-ignore-case 100
   (prop/for-all [before (gen/not-empty gen/string)
-                 needle (gen/not-empty gen/string)
+                 needle (gen/not-empty string-without-german-b)
                  after (gen/not-empty gen/string)]
     (-> before
         (str (randomly-swapcase needle) after)
-        (str/contains-any? [needle] :ignore-case)
-        is)))
+        (str/contains-any? [needle] :ignore-case))))
 
 (defspec truncated-strings-have-right-length 100
-  (prop/for-all [[s len] (gen/bind (gen/such-that #(> (.length %) 3) gen/string 100)
+  (prop/for-all [[s len] (gen/bind (gen/such-that #(> (str/length %) 3) gen/string 100)
                                    (fn [s]
                                      (gen/tuple
                                       (gen/return s)
-                                      (gen/choose 3 (max 4 (- (.length s) 3)) ))))]
-    (= (.length (str/truncate s len)) (min (.length s) len))))
+                                      (gen/choose 3 (max 4 (- (str/length s) 3)) ))))]
+    (= (str/length (str/truncate s len)) (min (str/length s) len))))
 
 (defexamples truncate
   (str/truncate "" 3) ""
@@ -354,8 +351,7 @@
   (prop/for-all [prefix (gen/not-empty gen/string)
                  s1 gen/string
                  s2 gen/string]
-    (.startsWith (str/common-prefix (str prefix s1) (str prefix s2)) prefix)))
-
+    (str/starts-with? (str/common-prefix (str prefix s1) (str prefix s2)) prefix)))
 
 (defexamples common-suffix
   (str/common-suffix "321" "123") ""
@@ -369,26 +365,7 @@
   (prop/for-all [suffix (gen/not-empty gen/string)
                  s1 gen/string
                  s2 gen/string]
-    (.endsWith (str/common-suffix (str s1 suffix) (str s2 suffix)) suffix)))
-
-(defn upper-if-upper-exists?
-  "Is c uppercase for those characters which have an upper case version?"
-  [^Character c]
-  (or (Character/isUpperCase c) (= c (Character/toUpperCase c))))
-
-(defn lower-if-lower-exists?
-  "Is c lower for those characters which have an lower case version?"
-  [^Character c]
-  (or (Character/isLowerCase c) (= c (Character/toLowerCase c))))
-
-(defspec title-case-starts-with-upper 100
-  (prop/for-all [s (gen/not-empty gen/string)]
-    (upper-if-upper-exists? (first (str/title-case s)))))
-
-(defspec title-case-rest-is-all-lower-case 100
-  (prop/for-all [s (gen/not-empty gen/string)]
-    (reduce (fn [acc c] (and acc (lower-if-lower-exists? c))) true
-            (rest (str/title-case s)))))
+    (str/ends-with? (str/common-suffix (str s1 suffix) (str s2 suffix)) suffix)))
 
 (defspec upper-case?-returns-true-on-all-upper 100
   (prop/for-all [s (gen/not-empty gen/string)]
@@ -399,9 +376,13 @@
                                   (gen/fmap str/join (gen/vector gen/char-alpha)))]
     (not (str/upper-case? (str/lower-case s)))))
 
-(deftest upper-case-test
+(t/deftest upper-case-test
   (str/upper-case? "UPPER") "UPPER"
   (str/upper-case? "123UPPER!") "123UPPER!")
+
+(defexamples lower-case-test
+  (str/lower-case? "upper") "upper"
+  (str/lower-case? "123upper!") "123upper!")
 
 (defspec lower-case?-returns-true-on-all-lower 100
   (prop/for-all [s (gen/not-empty gen/string)]
@@ -413,12 +394,12 @@
     (not (str/lower-case? (str/upper-case s)))))
 
 (defn- word []
-  (gen/fmap #(if (< (.length %) 10)
-               % (.substring % 0 (rand-int (.length %))))
+  (gen/fmap #(if (< (str/length %) 10)
+               % (str/substring % 0 (rand-int (str/length %))))
             (gen/not-empty gen/string-alphanumeric)))
 
 (defn- less-than-width-or-unbreakable [line width]
-  (or (<= (.length line) width)
+  (or (<= (str/length line) width)
       (not (re-find #" " line))))
 
 (defspec wrap-words-have-lines-no-longer-than-max-width 25
@@ -430,14 +411,9 @@
             true
             (str/split-lines (str/wrap-words (str/join " " words) width)))))
 
-(defexamples lower-case-test
-  (str/lower-case? "upper") "upper"
-  (str/lower-case? "123upper!") "123upper!")
-
 (defspec lisp-case-is-all-lower 100
   (prop/for-all [s (gen/not-empty gen/string)]
-    (reduce (fn [acc c] (and acc (lower-if-lower-exists? c))) true
-            (str/lisp-case s))))
+    (str/lower-case? (str/lisp-case s))))
 
 (defexamples lisp-case-test
   (str/lisp-case "PascalCase") "pascal-case"
@@ -538,27 +514,27 @@
   (prop/for-all [s (gen/not-empty gen/string-alphanumeric)
                  ws1 (gen/not-empty whitespace)
                  ws2 (gen/not-empty whitespace)]
-    (= (+ (.length s) 2)
-       (.length (str/collapse-whitespace (str ws1 s ws2))))))
+    (= (+ (str/length s) 2)
+       (str/length (str/collapse-whitespace (str ws1 s ws2))))))
 
 (defexamples collapse-whitespace-test
   (str/collapse-whitespace "foo
 
-bar    	baz") "foo bar baz"
+bar          baz") "foo bar baz"
 (str/collapse-whitespace " foo bar baz ") " foo bar baz ")
 
 (defspec levenshtein-distance-is-at-least-difference-between-string-lenghts 100
   (prop/for-all [s1 (gen/not-empty gen/string)
                  s2 (gen/not-empty gen/string)]
     (>= (str/distance s1 s2)
-        (- (max (.length s1) (.length s2))
-           (min (.length s1) (.length s2))))))
+        (- (max (str/length s1) (str/length s2))
+           (min (str/length s1) (str/length s2))))))
 
 (defspec levenshtein-distance-is-at-most-length-of-longest-string 100
   (prop/for-all [s1 (gen/not-empty gen/string)
                  s2 (gen/not-empty gen/string)]
     (<= (str/distance s1 s2)
-        (max (.length s1) (.length s2)))))
+        (max (str/length s1) (str/length s2)))))
 
 (defspec levenshtein-distance-is-zero-for-equal-strings 100
   (prop/for-all [s (gen/not-empty gen/string)]
@@ -589,8 +565,10 @@ bar    	baz") "foo bar baz"
   (str/distance "2173896" "2233796" :hamming) 3
   (str/distance "foo" "foobar" :hamming) 3)
 
-(deftest distance-throws-on-unknown
-  (is (thrown? IllegalArgumentException (str/distance :unknown-algorithm))))
+(t/deftest distance-throws-on-unknown
+  (t/is #?(:cljs (thrown? js/Error
+                          (str/distance "s1" "s2" :unknown-algorithm))
+                 :clj (thrown? IllegalArgumentException (str/distance :unknown-algorithm)))))
 
 (defexamples longest-common-substring
   (str/longest-common-substring "fooquxbar" "foobar") #{"foo" "bar"}
@@ -606,17 +584,9 @@ bar    	baz") "foo bar baz"
                                     1000)]
     (seq ((str/longest-common-substring (str s1 lcs) (str lcs s2)) lcs))))
 
-(defspec length-test 100
-  (prop/for-all [s gen/string]
-    (= (.length s) (str/length s))))
-
-(defexamples index-of-test
-  (str/index-of "foo" "foo") 0
-  (str/index-of "foo" "bar") nil)
-
-(defexamples last-index-of-test
-  (str/last-index-of "foo" "bar") nil
-  (str/last-index-of "foofoo" "foo") 3)
+#?(:clj
+   (t/deftest added-metadata-is-removed-from-aliased-vars
+     (t/is (not (:added (meta #'str/trim))))))
 
 (defspec char-at-acts-like-char-at
   (prop/for-all [[s i] (gen/bind (gen/not-empty gen/string)
@@ -630,5 +600,10 @@ bar    	baz") "foo bar baz"
   (re-matches (re-pattern ".foo.") "afoob") "afoob"
   (re-matches (re-pattern (str/re-quote ".foo.")) "afoob") nil)
 
-(deftest added-metadata-is-removed-from-aliased-vars
-  (is (not (:added (meta #'str/trim)))))
+(t/deftest added-metadata-is-removed-from-aliased-vars
+  (t/is (not (:added (meta #'str/trim)))))
+
+#?(:cljs
+   (do
+     (enable-console-print!)
+     (set! *main-cli-fn* #(t/run-tests))))

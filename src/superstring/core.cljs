@@ -1,46 +1,33 @@
 (ns superstring.core
-  (:require clojure.string)
-  (:refer-clojure :exclude [reverse replace contains?])
-  (:import java.text.Normalizer))
+  (:require [clojure.string :as str]
+            [clojure.set :as set])
+  (:refer-clojure :exclude [reverse replace contains?]))
 
 (declare slice)
 
-;; Taken from [jackknife "0.1.6"]
-(defmacro ^:private defalias
-  "Defines an alias for a var: a new var with the same root binding (if
-  any) and similar metadata. The metadata of the alias is its initial
-  metadata (as provided by def) merged into the metadata of the original."
-  ([name orig]
-   `(do
-      (alter-meta!
-       (if (.hasRoot (var ~orig))
-         (def ~name (.getRawRoot (var ~orig)))
-         (def ~name))
-       ;; When copying metadata, disregard {:macro false}.
-       ;; Workaround for http://www.assembla.com/spaces/clojure/tickets/273
-       #(conj (dissoc % :macro)
-              (apply dissoc (dissoc (meta (var ~orig)) :added)
-                     (remove #{:macro} (keys %)))))
-      (var ~name)))
-  ([name orig doc]
-   (list `defalias (with-meta name (assoc (meta name) :doc doc)) orig)))
+(def blank? str/blank?)
+(def capitalize str/capitalize)
+(def join str/join)
+(def lower-case str/lower-case)
+(def escape str/escape)
+(def replace str/replace)
+(def reverse str/reverse)
+(def split str/split)
+(def split-lines str/split-lines)
+(def trim str/trim)
+(def trim-newline str/trim-newline)
+(def triml str/triml)
+(def trimr str/trimr)
+(def upper-case str/upper-case)
 
-(defmacro ^:private alias-ns
-  "Create an alias for all public vars in ns in this ns."
-  [namespace]
-  `(do ~@(map
-          (fn [n] `(defalias ~(.sym n) ~(symbol (str (.ns n)) (str (.sym n)))))
-          (vals (ns-publics namespace)))))
-
-(alias-ns clojure.string)
-(defalias substring clojure.core/subs)
+(def substring clojure.core/subs)
 
 (defn length
   "Return the length of s."
   [^String s]
   {:pre [(string? s)]
    :post [(integer? %)]}
-  (.length s))
+  (.-length s))
 
 (defn index-of
   "Return the starting position of the first occurrence of needle in s or nil.
@@ -91,11 +78,11 @@
 
   Returns nil if index falls outside the string boundaries or if
   length is negative."
-  ([^String s ^long index]
+  ([^String s index]
    {:pre [(string? s) (integer? index)]
     :post [(or (string? %) (nil? %))]}
    (slice s index 1))
-  ([^String s ^long index ^long length]
+  ([^String s index length]
    {:pre [(string? s) (integer? index) (integer? length)]
     :post [(or (string? %) (nil? %))]}
    (cond
@@ -109,6 +96,13 @@
      :else (let [end (+ index length)]
              (substring s index end)))))
 
+(defn- equals-ignore-case [s1 s2]
+  (when
+      (and (= (length s1) (length s2))
+           (or (= (.toLocaleLowerCase s1) (.toLocaleLowerCase s2))
+               (= (.toLocaleUpperCase s1) (.toLocaleUpperCase s2))))
+    s1))
+
 (defn ^String ends-with?
   "Return s if s ends with suffix.
 
@@ -116,15 +110,16 @@
   ([^String s ^String suffix]
    {:pre [(string? s) (string? suffix)]
     :post [(or (string? %) (nil? %))]}
-   (when (.endsWith s suffix)
-     s))
+   (let [idx (index-of s suffix (- (length s) (length suffix)))]
+     (when (and idx (not= idx -1))
+       s)))
   ([^String s ^String suffix ignore-case]
    {:pre [(string? s) (string? suffix)]
     :post [(or (string? %) (nil? %))]}
    (if-not ignore-case
      (ends-with? s suffix)
      (let [end (substring s (max 0 (- (length s) (length suffix))))]
-       (when (.equalsIgnoreCase end suffix)
+       (when (equals-ignore-case end suffix)
          s)))))
 
 (defn ^String starts-with?
@@ -134,15 +129,16 @@
   ([^String s ^String prefix]
    {:pre [(string? s) (string? prefix)]
     :post [(or (string? %) (nil? %))]}
-   (when (.startsWith s prefix)
-     s))
+   (let [idx (index-of s prefix)]
+     (when (= idx 0)
+       s)))
   ([^String s ^String prefix ignore-case]
    {:pre [(string? s) (string? prefix)]
     :post [(or (string? %) (nil? %))]}
    (if-not ignore-case
      (starts-with? s prefix)
-     (let [beg (substring s 0 (min (length s) (length prefix)))]
-       (when (.equalsIgnoreCase beg prefix)
+     (let [beg (substring s 0 (min (length prefix) (length s)))]
+       (when (equals-ignore-case beg prefix)
          s)))))
 
 (defn ^String chop
@@ -157,7 +153,7 @@
   [^String s]
   {:pre [(string? s)]
    :post [(string? %)]}
-  (if (.endsWith s "\r\n")
+  (if (ends-with? s "\r\n")
     (substring s 0 (- (length s) 2))
     (substring s 0 (max 0 (dec (length s))))))
 
@@ -168,17 +164,13 @@
   If separator is not provided chomp will remove \\n, \\r or \\r\\n from
   the end of s."
   ([^String s]
-   {:pre [(string? s)]
-    :post [(string? %)]}
    (cond
-     (.endsWith s "\r\n") (substring s 0 (- (length s) 2))
-     (.endsWith s "\r") (substring s 0 (dec (length s)))
-     (.endsWith s "\n") (substring s 0 (dec (length s)))
+     (ends-with? s "\r\n") (substring s 0 (- (length s) 2))
+     (ends-with? s "\r") (substring s 0 (dec (length s)))
+     (ends-with? s "\n") (substring s 0 (dec (length s)))
      :else s))
   ([^String s ^String separator]
-   {:pre [(string? s) (string? separator)]
-    :post [(string? %)]}
-   (if (.endsWith s separator)
+   (if (ends-with? s separator)
      (substring s 0 (- (length s) (length separator)))
      s)))
 
@@ -191,7 +183,7 @@
   {:pre [(string? s)]
    :post [(or (nil? %) (string? %))]}
   (when (reduce
-         (fn [acc c] (and acc (= c (Character/toUpperCase c))))
+         (fn [acc c] (and acc (= c (.toLocaleUpperCase c))))
          true s)
     s))
 
@@ -203,7 +195,7 @@
   [^String s]
   {:pre [(string? s)]
    :post [(or (nil? %) (string? %))]}
-  (when (reduce (fn [acc c] (and acc (= c (Character/toLowerCase c))))
+  (when (reduce (fn [acc c] (and acc (= c (.toLocaleLowerCase c))))
                 true s)
     s))
 
@@ -214,15 +206,14 @@
    :post [(string? %)]}
   (let [invert-case (fn [c]
                       (cond
-                        (Character/isUpperCase c) (Character/toLowerCase c)
-                        (= c \ß) "SS" ; this uppers to itself
-                        (Character/isLowerCase c) (Character/toUpperCase c)
+                        (lower-case? c) (.toLocaleUpperCase c)
+                        (upper-case? c) (.toLocaleLowerCase c)
                         :else c))]
     (->> s (map invert-case) (apply str))))
 
 (defn- gen-padding
   "Generate the necessary padding to fill s upto width."
-  [^String s ^String padding ^long width]
+  [s padding width]
   (let [missing (- width (length s))
         full-lengths (Math/floor (/ missing (length padding)))
         remaining (if (zero? full-lengths) (- width (length s))
@@ -234,11 +225,11 @@
 (defn ^String pad-right
   "Pad the end of s with padding, or spaces, until the length of s matches
   width."
-  ([^String s ^long width]
+  ([^String s width]
    {:pre [(string? s) (integer? width)]
     :post [(string? %)]}
    (pad-right s width " "))
-  ([^String s ^long width ^String padding]
+  ([s width padding]
    {:pre [(not-empty padding)
           (not (nil? s))]
     :post [(= (length %) width)]}
@@ -249,11 +240,11 @@
 (defn ^String pad-left
   "Pad the beginning of s with padding, or spaces, until the length of
   s matches width."
-  ([^String s ^long width]
+  ([^String s width]
    {:pre [(string? s) (integer? width)]
     :post [(string? %)]}
    (pad-left s width " "))
-  ([^String s ^long width ^String padding]
+  ([^String s width ^String padding]
    {:pre [(not-empty padding)
           (not (nil? s))]
     :post [(= (length %) width)]}
@@ -319,18 +310,21 @@
   [s needle]
   (if (= needle "")
     s
-    (when (.contains s needle)
+    (when (index-of s needle)
       s)))
+
+(defn re-quote
+  "Return a string matching s exactly, and nothing else, for use in
+  regular expressions."
+  [s]
+  (goog.string/regExpEscape s))
 
 (defn- case-insensitive-contains
   [s needle]
   (if (= needle "")
     s
-    (let [p (java.util.regex.Pattern/compile
-             (java.util.regex.Pattern/quote needle)
-             (bit-or java.util.regex.Pattern/CASE_INSENSITIVE
-                     java.util.regex.Pattern/UNICODE_CASE))]
-      (when (re-find p s)
+    (let [p (re-quote needle)]
+      (when (re-find (js/RegExp. p "i") s)
         s))))
 
 (defn ^String contains?
@@ -353,7 +347,7 @@
     :post [(or (string? %) (nil? %))]}
    (when (every? (partial case-sensitive-contains s) needles)
      s))
-  ([^String s needles ignore-case]
+  ([s needles ignore-case]
    {:pre [(string? s) (every? string? needles)]
     :post [(or (string? %) (nil? %))]}
    (if ignore-case
@@ -384,10 +378,10 @@
     s))
 
 (defn- char-equal-ignore-case
-  [^Character c1 ^Character c2]
+  [c1 c2]
   (when (or (= c1 c2)
-            (= (Character/toUpperCase c1) c2)
-            (= (Character/toLowerCase c1) c2))
+            (= (upper-case c1) c2)
+            (= (lower-case c1) c2))
     c1))
 
 (defn common-prefix
@@ -430,7 +424,7 @@
   (->> (split s #"\n|\t|\n| ")
        (remove empty?)
        (reduce
-        (fn [{:keys [len res]} ^String word]
+        (fn [{:keys [len res]} word]
           (if (< (+ len (length word)) width)
             {:len (+ len (length word) 1) :res (conj res " " word)}
             {:len (length word) :res (conj res "\n" word)}))
@@ -443,10 +437,10 @@
   (remove empty?
           (-> s
               (replace #"_|-" " ")
-              (replace #"(\p{javaUpperCase})((\p{javaUpperCase})[(\p{javaLowerCase})0-9])"
+              (replace #"([A-Z])(([A-Z])([a-z0-9]))"
                        "$1 $2")
               (replace
-               #"(\p{javaLowerCase})(\p{javaUpperCase})" "$1 $2")
+               #"([a-z])([A-Z])" "$1 $2")
               (split
                #"[^\w0-9]+"))))
 
@@ -507,6 +501,13 @@
    :post [(string? %)]}
   (join "_"  (map upper-case (split-words s))))
 
+(defn char-at
+  "Get the character in s at index i."
+  [^String s i]
+  {:pre [(string? s) (integer? i) (< i (length s))]
+   :post [(string? %)]}
+  (.charAt s i))
+
 (defn ^String strip-accents
   "Strip all accents (diacritical marks) from s.
 
@@ -514,9 +515,9 @@
   [^String s]
   {:pre [(string? s)]
    :post [(string? %)]}
-  (-> s
-      (Normalizer/normalize java.text.Normalizer$Form/NFD)
-      (.replaceAll  "\\p{InCombiningDiacriticalMarks}+" "")))
+  (let [from "ąàáäâãåăćčĉęèéëêĝĥìíïîĵłľńňòóöőôõðśșšŝťțŭùúüűûñÿýçżźž"
+        to "aaaaaaaaccceeeeeghiiiijllnnooooooossssttuuuuuunyyczzz"]
+    (apply str (map (fn [c] (if-let [i (index-of from c)] (char-at to i) c)) s))))
 
 (defn ^String ascii?
   "Return s if s only contains ASCII characters."
@@ -524,7 +525,7 @@
   {:pre [(string? s)]
    :post [(or (nil? %) (string? %))]}
   ;; The ASCII character set is encoded as the integers from 0 to 127.
-  (when (reduce (fn [acc c] (and acc (< (int c) 128)))
+  (when (reduce (fn [acc c] (and acc (< (.charCodeAt c 0) 128)))
                 true s)
     s))
 
@@ -552,9 +553,12 @@
   [^String s]
   {:pre [(string? s)]
    :post [(or (nil? %) (string? %))]}
-  (when (and (seq (filter #(Character/isLowerCase %) s))
-             (seq (filter #(Character/isUpperCase %) s)))
-    s))
+  (let [caseless (set/intersection (set (seq (lower-case s)))
+                                   (set (seq (upper-case s))))
+        lower (set/difference (set (filter #(lower-case? %) s)) caseless)
+        upper (set/difference (set (filter #(upper-case? %) s)) caseless)]
+    (when (and (seq upper) (seq lower))
+      s)))
 
 (defn ^String collapse-whitespace
   "Convert all adjacent whitespace characters in s to a single space."
@@ -609,7 +613,7 @@
      :levenshtein (distance s1 s2)
      :hamming (hamming-distance s1 s2)
      (let [msg (str "Unknown algorithm: " algorithm)]
-       (throw (IllegalArgumentException. msg))))))
+       (throw (js/Error msg))))))
 
 (defn longest-common-substring
   "Returns the set of the longest common substrings in s1 and s2.
@@ -622,7 +626,10 @@
    :post [(set? %)]}
   (let [rows (inc (length s1))
         cols (inc (length  s2))
-        ls (make-array Long rows cols)
+        ls (let [ls (make-array rows)]
+             (dotimes [row rows]
+               (aset ls row (make-array cols)))
+             ls)
         z (atom 0)
         ret (atom #{})]
     (doseq [i (range 0 rows)]
@@ -641,20 +648,3 @@
             (when (= (aget ls i j) @z)
               (swap! ret conj (substring s1 (- i @z) i)))))))
     @ret))
-
-(defn char-at
-  "Get the character in s at index i."
-  {:added "1.1"}
-  [^String s ^long i]
-  {:pre [(string? s) (integer? i) (< i (length s))]
-   :post (instance? Character %)}
-  (.charAt s i))
-
-(defn re-quote
-  "Create a string matching s exactly, and nothing else, for use in
-  regular expressions."
-  {:added "1.1"}
-  [^String s]
-  {:pre [(string? s)]
-   :post (string? %)}
-  (java.util.regex.Pattern/quote s))

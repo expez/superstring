@@ -592,7 +592,7 @@ bar    	baz") "foo bar baz"
 (deftest distance-throws-on-unknown
   (is (thrown? IllegalArgumentException (str/distance :unknown-algorithm))))
 
-(deftest longest-common-substring
+(defexamples longest-common-substring
   (str/longest-common-substring "fooquxbar" "foobar") #{"foo" "bar"}
   (str/longest-common-substring "FOOquxbar" "foobar") #{"bar"}
   (str/longest-common-substring "foo" "bar") #{})
@@ -604,7 +604,7 @@ bar    	baz") "foo bar baz"
                                    1000)
                  lcs (gen/such-that #(> (count %) 5) (gen/not-empty gen/string)
                                     1000)]
-    (is ((str/longest-common-substring (str s1 lcs) (str lcs s2)) lcs))))
+    (seq ((str/longest-common-substring (str s1 lcs) (str lcs s2)) lcs))))
 
 (defspec length-test 100
   (prop/for-all [s gen/string]

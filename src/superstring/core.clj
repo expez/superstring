@@ -666,7 +666,7 @@
 (defn re-quote
   "Create a string matching s exactly, and nothing else, for use in
   regular expressions."
-  [s]
+  [^String s]
   {:pre [(string? s)]
    :post (string? %)
    :added "1.1"}

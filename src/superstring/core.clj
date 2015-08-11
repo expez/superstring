@@ -659,11 +659,15 @@
   "Get the character in s at index i."
   [^String s i]
   {:pre [(string? s) (integer? i) (< i (length s))]
-   :post (instance? Character %)}
+   :post (instance? Character %)
+   :added "1.1"}
   (.charAt s i))
 
 (defn re-quote
   "Create a string matching s exactly, and nothing else, for use in
   regular expressions."
   [s]
+  {:pre [(string? s)]
+   :post (string? %)
+   :added "1.1"}
   (java.util.regex.Pattern/quote s))

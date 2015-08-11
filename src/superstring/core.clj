@@ -661,3 +661,9 @@
   {:pre [(string? s) (integer? i) (< i (length s))]
    :post (instance? Character %)}
   (.charAt s i))
+
+(defn re-quote
+  "Create a string matching s exactly, and nothing else, for use in
+  regular expressions."
+  [s]
+  (java.util.regex.Pattern/quote s))

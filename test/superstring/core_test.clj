@@ -626,5 +626,9 @@ bar    	baz") "foo bar baz"
                                     (gen/choose 0 (max 0 (dec (str/length s)))))))]
     (= (.charAt s i) (str/char-at s i))))
 
+(defexamples re-quote
+  (re-matches (re-pattern ".foo.") "afoob") "afoob"
+  (re-matches (re-pattern (str/re-quote ".foo.")) "afoob") nil)
+
 (deftest added-metadata-is-removed-from-aliased-vars
   (is (not (:added (meta #'str/trim)))))

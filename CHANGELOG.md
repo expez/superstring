@@ -4,6 +4,11 @@
 
 ### New features
 
+### Bugs fixed
+
+# 1.1.0
+### New features
+
 * Add char-at, which wraps the native String/charAt
 * Add re-quote which quotes a string, for use in regular expressions.
 

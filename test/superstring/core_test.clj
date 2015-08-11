@@ -618,5 +618,13 @@ bar    	baz") "foo bar baz"
   (str/last-index-of "foo" "bar") nil
   (str/last-index-of "foofoo" "foo") 3)
 
+(defspec char-at-acts-like-char-at
+  (prop/for-all [[s i] (gen/bind (gen/not-empty gen/string)
+                                 (fn [s]
+                                   (gen/tuple
+                                    (gen/return s)
+                                    (gen/choose 0 (max 0 (dec (str/length s)))))))]
+    (= (.charAt s i) (str/char-at s i))))
+
 (deftest added-metadata-is-removed-from-aliased-vars
   (is (not (:added (meta #'str/trim)))))

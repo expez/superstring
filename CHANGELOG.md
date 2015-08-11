@@ -4,6 +4,8 @@
 
 ### New features
 
+* Add char-at, which wraps the native String/charAt
+
 ### Bugs fixed
 
 * `mixed-case?` is now false on strings like "123" where no character has a case.

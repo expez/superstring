@@ -654,3 +654,10 @@
             (when (= (aget ls i j) @z)
               (swap! ret conj (substring s1 (- i @z) i)))))))
     @ret))
+
+(defn char-at
+  "Get the character in s at index i."
+  [^String s i]
+  {:pre [(string? s) (integer? i) (< i (length s))]
+   :post (instance? Character %)}
+  (.charAt s i))

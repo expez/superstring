@@ -657,17 +657,17 @@
 
 (defn char-at
   "Get the character in s at index i."
+  {:added "1.1"}
   [^String s i]
   {:pre [(string? s) (integer? i) (< i (length s))]
-   :post (instance? Character %)
-   :added "1.1"}
+   :post (instance? Character %)}
   (.charAt s i))
 
 (defn re-quote
   "Create a string matching s exactly, and nothing else, for use in
   regular expressions."
+  {:added "1.1"}
   [^String s]
   {:pre [(string? s)]
-   :post (string? %)
-   :added "1.1"}
+   :post (string? %)}
   (java.util.regex.Pattern/quote s))

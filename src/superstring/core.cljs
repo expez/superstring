@@ -60,13 +60,13 @@
      (when-not (= i -1)
        i))))
 
-(defn- ^String slice-relative-to-end
+(defn- slice-relative-to-end
   [s index length]
   (if (neg? (+ (superstring.core/length s) index))
     nil ; slice outside beg of s
     (slice s (+ (superstring.core/length s) index) length)))
 
-(defn ^String slice
+(defn slice
   "Return a slice of s beginning at index and of the given length.
 
   If index is negative the starting index is relative to the end of the string.
@@ -103,7 +103,7 @@
                (= (.toLocaleUpperCase s1) (.toLocaleUpperCase s2))))
     s1))
 
-(defn ^String ends-with?
+(defn ends-with?
   "Return s if s ends with suffix.
 
   If a third argument is provided the string comparison is insensitive to case."
@@ -122,7 +122,7 @@
        (when (equals-ignore-case end suffix)
          s)))))
 
-(defn ^String starts-with?
+(defn starts-with?
   "Return s if s starts with with prefix.
 
   If a third argument is provided the string comparison is insensitive to case."
@@ -141,7 +141,7 @@
        (when (equals-ignore-case beg prefix)
          s)))))
 
-(defn ^String chop
+(defn chop
   "Return a new string with the last character removed.
 
   If the string ends with \\r\\n, both characters are removed.
@@ -157,7 +157,7 @@
     (substring s 0 (- (length s) 2))
     (substring s 0 (max 0 (dec (length s))))))
 
-(defn ^String chomp
+(defn chomp
   "Return a new string with the given record separator removed from
   the end (if present).
 
@@ -174,7 +174,7 @@
      (substring s 0 (- (length s) (length separator)))
      s)))
 
-(defn ^String upper-case?
+(defn upper-case?
   "Return s if s is all upper case.
 
   Characters without case, e.g. numbers, are considered to be trivially
@@ -199,7 +199,7 @@
                 true s)
     s))
 
-(defn ^String swap-case
+(defn swap-case
   "Change lower case characters to upper case and vice versa."
   [^String s]
   {:pre [(string? s)]
@@ -222,7 +222,7 @@
          (substring padding 0 remaining))))
 
 
-(defn ^String pad-right
+(defn pad-right
   "Pad the end of s with padding, or spaces, until the length of s matches
   width."
   ([^String s width]
@@ -237,7 +237,7 @@
      s
      (str s (gen-padding s padding width)))))
 
-(defn ^String pad-left
+(defn pad-left
   "Pad the beginning of s with padding, or spaces, until the length of
   s matches width."
   ([^String s width]
@@ -252,7 +252,7 @@
      s
      (str (gen-padding s padding width) s))))
 
-(defn ^String center
+(defn center
   "Pad both ends of s with padding, or spaces, until the length of s
   matches width."
   ([^String s width]
@@ -273,7 +273,7 @@
             s
             (substring p (* (length padding) lengths-before)))))))
 
-(defn ^String chop-suffix
+(defn chop-suffix
   "If s ends with suffix return a new string without the suffix.
 
   Otherwise return s."
@@ -327,7 +327,7 @@
       (when (re-find (js/RegExp. p "i") s)
         s))))
 
-(defn ^String contains?
+(defn contains?
   "Return s if s contains needle."
   ([^String s ^String needle]
    {:pre [(string? s) (string? needle)]
@@ -444,7 +444,7 @@
               (split
                #"[^\w0-9]+"))))
 
-(defn ^String lisp-case
+(defn lisp-case
   "Lower case s and separate words with dashes.
 
   foo bar => foo-bar
@@ -468,7 +468,7 @@
   (let [words (split-words s)]
     (join ""  (conj (map capitalize (rest words)) (lower-case (first words))))))
 
-(defn ^String pascal-case
+(defn pascal-case
   "Lower case first char in s and use capitalization to separate words.
 
   foo bar => FooBar
@@ -479,7 +479,7 @@
    :post [(string? %)]}
   (join ""  (map capitalize (split-words s))))
 
-(defn ^String snake-case
+(defn snake-case
   "Lower case s and use underscores to separate words.
 
   foo bar => foo_bar
@@ -490,7 +490,7 @@
    :post [(string? %)]}
   (join "_"  (map lower-case (split-words s))))
 
-(defn ^String screaming-snake-case
+(defn screaming-snake-case
   "Upper case s and use underscores to separate words.
 
   foo bar => FOO_BAR
@@ -508,7 +508,7 @@
    :post [(string? %)]}
   (.charAt s i))
 
-(defn ^String strip-accents
+(defn strip-accents
   "Strip all accents (diacritical marks) from s.
 
   Et ça sera sa moitié => Et ca sera sa moitie"
@@ -519,7 +519,7 @@
         to "aaaaaaaaccceeeeeghiiiijllnnooooooossssttuuuuuunyyczzz"]
     (apply str (map (fn [c] (if-let [i (index-of from c)] (char-at to i) c)) s))))
 
-(defn ^String ascii?
+(defn ascii?
   "Return s if s only contains ASCII characters."
   [^String s]
   {:pre [(string? s)]
@@ -529,7 +529,7 @@
                 true s)
     s))
 
-(defn ^String slug
+(defn slug
   "Transform s so it's suitable for use in URLs.
 
   The following transformations are applied:
@@ -548,7 +548,7 @@
       (replace #"-+" "-")
       lower-case))
 
-(defn ^String mixed-case?
+(defn mixed-case?
   "Return s if s contains both upper and lower case letters."
   [^String s]
   {:pre [(string? s)]
@@ -560,14 +560,14 @@
     (when (and (seq upper) (seq lower))
       s)))
 
-(defn ^String collapse-whitespace
+(defn collapse-whitespace
   "Convert all adjacent whitespace characters in s to a single space."
   [^String s]
   {:pre [(string? s)]
    :post [(string? %)]}
   (replace s #"[ \t\n\r]+" " "))
 
-(defn- ^Long levenshtein-distance
+(defn- levenshtein-distance
   [^String s1 ^String s2]
   (let [subsolutions (atom {})
         subsolution (fn [i j]

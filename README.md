@@ -5,7 +5,7 @@
 Add the following dependency to your `project.clj` file:
 
 ```clj
-[superstring "1.0.1"]
+[superstring "1.1.0"]
 ```
 
 ## Documentation

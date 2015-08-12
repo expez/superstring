@@ -9,3 +9,7 @@ pom.xml.asc
 /.nrepl-port
 /doc
 /update-docs.sh
+/.project
+/bin/
+/.classpath
+/.settings/

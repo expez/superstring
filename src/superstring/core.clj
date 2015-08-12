@@ -3,6 +3,9 @@
   (:refer-clojure :exclude [reverse replace contains?])
   (:import java.text.Normalizer))
 
+(set! *warn-on-reflection* true)
+(set! *unchecked-math* true)
+
 (declare slice)
 
 ;; Taken from [jackknife "0.1.6"]
@@ -29,52 +32,52 @@
   "Create an alias for all public vars in ns in this ns."
   [namespace]
   `(do ~@(map
-          (fn [n] `(defalias ~(.sym n) ~(symbol (str (.ns n)) (str (.sym n)))))
+          (fn [^clojure.lang.Var n] `(defalias ~(.sym n) ~(symbol (str (.ns n)) (str (.sym n)))))
           (vals (ns-publics namespace)))))
 
 (alias-ns clojure.string)
-(def substring clojure.core/subs)
+(def ^{:tag String} substring clojure.core/subs)
 
-(defn ^Long length
+(defn length
   "Return the length of s."
-  [^String s]
-  {:pre [(string? s)]
-   :post [(integer? %)]}
-  (.length s))
+  (^long [^String s]
+    {:pre [(string? s)]
+     :post [(integer? %)]}
+    (.length s)))
 
-(defn ^Long index-of
+(defn index-of
   "Return the starting position of the first occurrence of needle in s or nil.
 
   If start is provided, start the search at that position in s."
-  ([^String s needle]
+  (^Long [^String s needle]
    {:pre [(string? s) (string? needle)]
     :post [(or (integer? %) (nil? %))]}
    (index-of s needle 0))
-  ([^String s ^String needle start]
+  (^Long [^String s ^String needle ^long start]
    {:pre [(string? s) (string? needle) (integer? start)]
     :post [(or (integer? %) (nil? %))]}
-   (let [i (.indexOf s needle start)]
+   (let [i (long (.indexOf s needle (int start)))]
      (when-not (= i -1)
        i))))
 
-(defn ^Long last-index-of
+(defn last-index-of
   "Searching backwards, return the starting position of the last occurrence of
   needle in s or nil.
 
   If start is provided, start the search at that position in s."
-  ([^String s needle]
+  (^Long [^String s needle]
    {:pre [(string? s) (string? needle)]
     :post [(or (integer? %) (nil? %))]}
    (last-index-of s needle (dec (length s))))
-  ([^String s ^String needle start]
+  (^Long [^String s ^String needle ^long start]
    {:pre [(string? s) (string? needle) (integer? start)]
     :post [(or (integer? %) (nil? %))]}
-   (let [i (.lastIndexOf s needle start)]
+   (let [i (long (.lastIndexOf s needle start))]
      (when-not (= i -1)
        i))))
 
 (defn- ^String slice-relative-to-end
-  [s index length]
+  [^String s ^long index ^long length]
   (if (neg? (+ (superstring.core/length s) index))
     nil ; slice outside beg of s
     (slice s (+ (superstring.core/length s) index) length)))
@@ -91,11 +94,11 @@
 
   Returns nil if index falls outside the string boundaries or if
   length is negative."
-  ([^String s index]
+  ([^String s ^long index]
    {:pre [(string? s) (integer? index)]
     :post [(or (string? %) (nil? %))]}
    (slice s index 1))
-  ([^String s ^long index length]
+  ([^String s ^long index ^long length]
    {:pre [(string? s) (integer? index) (integer? length)]
     :post [(or (string? %) (nil? %))]}
    (cond
@@ -186,11 +189,12 @@
   {:pre [(string? s)]
    :post [(string? %)]}
   (let [invert-case (fn [c]
-                      (cond
-                        (Character/isUpperCase c) (Character/toLowerCase c)
-                        (= c \ß) "SS" ; this uppers to itself
-                        (Character/isLowerCase c) (Character/toUpperCase c)
-                        :else c))]
+                      (let [c (char c)]
+                        (cond
+                         (Character/isUpperCase c) (Character/toLowerCase c)
+                         (= c \ß) "SS" ; this uppers to itself
+                         (Character/isLowerCase c) (Character/toUpperCase c)
+                         :else c)))]
     (->> s (map invert-case) (apply str))))
 
 (defn- ^String gen-padding
@@ -289,11 +293,11 @@
      s)))
 
 (defn- case-sensitive-contains
-  [s needle]
-  (if (= needle "")
-    s
-    (when (.contains s needle)
-      s)))
+  (^String [^String s ^String needle]
+    (if (.equals needle "")
+      s
+      (when (.contains s needle)
+        s))))
 
 (defn- case-insensitive-contains
   [s needle]
@@ -561,24 +565,24 @@
       (.replaceAll "-+" "-")
       lower-case))
 
-(defn ^String mixed-case?
+(defn mixed-case?
   "Return s if s contains both upper and lower case letters."
-  [^String s]
-  {:pre [(string? s)]
-   :post [(or (nil? %) (string? %))]}
-  (when (and (seq (filter #(Character/isLowerCase %) s))
-             (seq (filter #(Character/isUpperCase %) s)))
-    s))
+  (^String  [^String s]
+    {:pre [(string? s)]
+     :post [(or (nil? %) (string? %))]}
+    (when (and (seq (filter #(Character/isLowerCase ^Character %) s))
+               (seq (filter #(Character/isUpperCase ^Character %) s)))
+      s)))
 
-(defn ^String collapse-whitespace
+(defn collapse-whitespace
   "Convert all adjacent whitespace characters in s to a single space."
-  [^String s]
-  {:pre [(string? s)]
-   :post [(string? %)]}
-  (.replaceAll s "[ \t\n\r]+" " "))
+  (^String  [^String s]
+    {:pre [(string? s)]
+     :post [(string? %)]}
+    (.replaceAll s "[ \t\n\r]+" " ")))
 
 (defn- ^Long levenshtein-distance
-  [s1 s2]
+  [^String s1 ^String s2]
   (let [subsolutions (atom {})
         subsolution (fn [i j]
                       (if (or (zero? i) (zero? j))
@@ -596,13 +600,14 @@
                          1))))))
     (subsolution (length s1) (length s2))))
 
-(defn- hamming-distance [s1 s2]
-  (+
-   (reduce + (map #(if (= %1 %2) 0 1) s1 s2))
-   (- (max (length s1) (length s2))
-      (min (length s1) (length s2)))))
+(defn- hamming-distance 
+  (^long [^String s1 ^String s2]
+    (+
+     (reduce + (map #(if (= %1 %2) 0 1) s1 s2))
+     (- (max (length s1) (length s2))
+        (min (length s1) (length s2))))))
 
-(defn ^Long distance
+(defn distance
   "Get the edit distance between s1 and s2.
 
   The default distance metric is the Levenshtein distance.
@@ -610,64 +615,64 @@
   The optional algorithm argument can be either :levenshtein to get
   the default, or :hamming to get the Hamming distance between s1 and
   s2."
-  ([^String s1 ^String s2]
-   {:pre [(string? s1)
-          (string? s2)]
-    :post [(integer? %)]}
-   (levenshtein-distance s1 s2))
-  ([^String s1 ^String s2 algorithm]
-   {:pre [(string? s1)
-          (string? s2)]
-    :post [(integer? %)]}
-   (case algorithm
-     :levenshtein (distance s1 s2)
-     :hamming (hamming-distance s1 s2)
-     (throw (IllegalArgumentException. (str "Unknown algorithm: " algorithm))))))
+  (^long [^String s1 ^String s2]
+     {:pre [(string? s1)
+            (string? s2)]
+      :post [(integer? %)]}
+     (levenshtein-distance s1 s2))
+  (^long [^String s1 ^String s2 algorithm]
+     {:pre [(string? s1)
+            (string? s2)]
+      :post [(integer? %)]}
+     (case algorithm
+       :levenshtein (distance s1 s2)
+       :hamming (hamming-distance s1 s2)
+       (throw (IllegalArgumentException. (str "Unknown algorithm: " algorithm))))))
 
 (defn longest-common-substring
   "Returns the set of the longest common substrings in s1 and s2.
 
   This implementation uses dynamic programming, and not a generalized
   suffix tree, so the runtime is O(nm)."
-  [^String s1 ^String s2]
-  {:pre [(string? s1)
-         (string? s2)]
-   :post [(set? %)]}
-  (let [rows (inc (length s1))
-        cols (inc (length  s2))
-        ls (make-array Long rows cols)
-        z (atom 0)
-        ret (atom #{})]
-    (doseq [i (range 0 rows)]
-      (doseq [j (range 0 cols)]
-        (aset ls i j 0)))
-    (doseq [i (range 1 rows)]
-      (doseq [j (range 1 cols)]
-        (when(= (.charAt s1 (dec i)) (.charAt s2 (dec j)))
-          (if (or (= i 0) (= j 0))
-            (aset ls i j 1)
-            (aset ls i j (inc (aget ls (dec i) (dec j)))))
-          (if (> (aget ls i j) @z)
-            (do
-              (reset! z (aget ls i j))
-              (reset! ret #{(substring s1 (- i @z) i)}))
-            (when (= (aget ls i j) @z)
-              (swap! ret conj (substring s1 (- i @z) i)))))))
-    @ret))
+  (^String [^String s1 ^String s2]
+    {:pre [(string? s1)
+           (string? s2)]
+     :post [(set? %)]}
+    (let [rows (inc (length s1))
+          cols (inc (length  s2))
+          ls (make-array Long rows cols)
+          z (atom 0)
+          ret (atom #{})]
+      (doseq [i (range 0 rows)]
+        (doseq [j (range 0 cols)]
+          (aset ls i j 0)))
+      (doseq [i (range 1 rows)]
+        (doseq [j (range 1 cols)]
+          (when(= (.charAt s1 (dec i)) (.charAt s2 (dec j)))
+            (if (or (= i 0) (= j 0))
+              (aset ls i j 1)
+              (aset ls i j (inc (aget ls (dec i) (dec j)))))
+            (if (> (aget ls i j) @z)
+              (do
+                (reset! z (aget ls i j))
+                (reset! ret #{(substring s1 (- i @z) i)}))
+              (when (= (aget ls i j) @z)
+                (swap! ret conj (substring s1 (- i @z) i)))))))
+      @ret)))
 
 (defn char-at
   "Get the character in s at index i."
   {:added "1.1"}
-  [^String s i]
-  {:pre [(string? s) (integer? i) (< i (length s))]
-   :post (instance? Character %)}
-  (.charAt s i))
+  (^Character [^String s ^long i]
+    {:pre [(string? s) (integer? i) (< i (length s))]
+     :post (instance? Character %)}
+    (.charAt s (int i))))
 
 (defn re-quote
   "Create a string matching s exactly, and nothing else, for use in
   regular expressions."
   {:added "1.1"}
-  [^String s]
-  {:pre [(string? s)]
-   :post (string? %)}
-  (java.util.regex.Pattern/quote s))
+  (^String [^String s]
+    {:pre [(string? s)]
+     :post (string? %)}
+    (java.util.regex.Pattern/quote s)))

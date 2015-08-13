@@ -5,7 +5,8 @@
 
 ### New features
 
-* clojurescript support
+* Add Clojurescript support.
+* Remove `title-case`, it was duplicating `clojure.string/capitalize`.
 
 ### Bugs fixed
 

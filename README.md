@@ -53,7 +53,7 @@ I'm interpreting this to mean:
 
 1. String comparisons ignoring case should not treat `ß` and `ss` or
 `SS` as equal.
-2. Any string operations which change the case, should consider `SS` to be the upper case variant of `ß`.
+2. Any string operations which change the case should consider `SS` to be the upper case variant of `ß`.
 
 ## License
 

@@ -10,6 +10,8 @@
 
 ### Bugs fixed
 
+* [#4](https://github.com/expez/superstring/issues/4) Inconsistency in the `pascal-case` docstring.  Examples were correct, prose was wrong.
+
 # 1.1.0
 ### New features
 

@@ -507,7 +507,7 @@
     (join ""  (conj (map capitalize (rest words)) (lower-case (first words))))))
 
 (defn pascal-case
-  "Lower case first char in s and use capitalization to separate words.
+  "Upper case first char in s and use capitalization to separate words.
 
   foo bar => FooBar
   camelCase => CamelCase

@@ -67,11 +67,9 @@
     (slice s (+ (superstring.core/length s) index) length)))
 
 (defn slice
-  "Return a slice of s beginning at index and of the given length.
+  "Return a slice of s beginning at index and of the given length, or 1.
 
   If index is negative the starting index is relative to the end of the string.
-
-  The default length of the slice is 1.
 
   If the requested slice ends outside the string boundaries, we return
   the substring of s starting at index.
@@ -123,7 +121,7 @@
          s)))))
 
 (defn starts-with?
-  "Return s if s starts with with prefix.
+  "Return s if s starts with prefix.
 
   If a third argument is provided the string comparison is insensitive to case."
   ([^String s ^String prefix]
@@ -161,7 +159,7 @@
   "Return a new string with the given record separator removed from
   the end (if present).
 
-  If separator is not provided chomp will remove \\n, \\r or \\r\\n from
+  If separator is not provided, chomp will remove \\n, \\r or \\r\\n from
   the end of s."
   ([^String s]
    (cond
@@ -274,7 +272,7 @@
             (substring p (* (length padding) lengths-before)))))))
 
 (defn chop-suffix
-  "If s ends with suffix return a new string without the suffix.
+  "If found, remove suffix from the end of s.
 
   Otherwise return s."
   ([^String s ^String suffix]
@@ -291,7 +289,7 @@
      s)))
 
 (defn chop-prefix
-  "If s starts with with prefix return a new string without the prefix.
+  "If found, remove prefix from the start of s.
 
   Otherwise return s."
   ([^String s ^String prefix]
@@ -328,7 +326,10 @@
         s))))
 
 (defn contains?
-  "Return s if s contains needle."
+  "Return s if s contains needle.
+
+  (contains? \"foobar\" \"foo\") => \"foobar\"
+  (contains? \"foobar\" \"qux\") => nil"
   ([^String s ^String needle]
    {:pre [(string? s) (string? needle)]
     :post [(or (string? %) (nil? %))]}
@@ -341,7 +342,10 @@
      (case-sensitive-contains s needle))))
 
 (defn contains-all?
-  "Return s if s contains all needles."
+  "Return s if s contains all needles.
+
+  (contains-all? \"foo bar baz\" [\"foo\" \"bar\"]) => \"foo bar baz\"
+  (contains-all? \"foo bar\" [\"qux\" \"bar\"]) => nil"
   ([^String s needles]
    {:pre [(string? s) (every? string? needles)]
     :post [(or (string? %) (nil? %))]}
@@ -356,7 +360,10 @@
      (contains-all? s needles))))
 
 (defn contains-any?
-  "Return s if s contains any of the needles."
+  "Return s if s contains any of the needles.
+
+  (contains-any? \"foo bar baz\" [\"foo\" \"qux\"]) => \"foo bar baz\"
+  (contains-any? \"foo bar\" [\"qux\" \"quux\"]) => nil"
   ([^String s needles]
    {:pre [(string? s) (every? string? needles)]
     :post [(or (string? %) (nil? %))]}
@@ -385,7 +392,10 @@
     c1))
 
 (defn common-prefix
-  "Return the longest common prefix of s1 and s2."
+  "Return the longest common prefix of s1 and s2.
+
+  (common-prefix \"abadon\" \"aberdeen\") => \"ab\"
+  (common-prefix \"foo\" \"bar\") => \"\""
   ([^String s1 ^String s2]
    {:pre [(string? s1) (string? s2)]
     :post [(string? %)]}
@@ -404,7 +414,10 @@
           (apply str)))))
 
 (defn common-suffix
-  "Return the longest common suffix of s1 and s2."
+  "Return the longest common suffix of s1 and s2.
+
+  (common-suffix \"bba\" \"aba\") => \"ba\"
+  (common-suffix \"foo\" \"bar\") => \"\""
   ([^String s1 ^String s2]
    {:pre [(string? s1) (string? s2)]
     :post [(string? %)]}
@@ -457,7 +470,7 @@
   (join "-" (map lower-case (split-words s))))
 
 (defn camel-case
-  "Lower case first char in s and use capitalization to separate words.
+  "Lower case the first char in s and use capitalization to separate words.
 
   foo bar => fooBar
   camelCase => camelCase
@@ -469,7 +482,7 @@
     (join ""  (conj (map capitalize (rest words)) (lower-case (first words))))))
 
 (defn pascal-case
-  "Upper case first char in s and use capitalization to separate words.
+  "Upper case the first char in s and use capitalization to separate words.
 
   foo bar => FooBar
   camelCase => CamelCase
@@ -549,7 +562,10 @@
       lower-case))
 
 (defn mixed-case?
-  "Return s if s contains both upper and lower case letters."
+  "Return s if s contains both upper and lower case letters.
+
+  (mixed-case? \"foo1\") => nil
+  (mixed-case? \"Foo Bar\") => \"Foo Bar\""
   [^String s]
   {:pre [(string? s)]
    :post [(or (nil? %) (string? %))]}
@@ -561,7 +577,7 @@
       s)))
 
 (defn collapse-whitespace
-  "Convert all adjacent whitespace characters in s to a single space."
+  "Convert all adjacent whitespace in s to a single space."
   [^String s]
   {:pre [(string? s)]
    :post [(string? %)]}

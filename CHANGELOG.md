@@ -1,12 +1,13 @@
 
 # Changelog
 
-## master (unreleased)
+## 2.0.0
 
 ### New features
 
 * Add Clojurescript support.
 * Remove `title-case`, it was duplicating `clojure.string/capitalize`.
+* Various docstring improvements.
 
 ### Bugs fixed
 

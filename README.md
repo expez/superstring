@@ -55,6 +55,10 @@ I'm interpreting this to mean:
 `SS` as equal.
 2. Any string operations which change the case should consider `SS` to be the upper case variant of `ß`.
 
+## Is it any good?
+
+Yes!
+
 ## License
 
 Copyright &copy; 2015 Lars Andersen

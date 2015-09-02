@@ -528,8 +528,8 @@
   [^String s]
   {:pre [(string? s)]
    :post [(string? %)]}
-  (let [from "ąàáäâãåăćčĉęèéëêĝĥìíïîĵłľńňòóöőôõðśșšŝťțŭùúüűûñÿýçżźž"
-        to "aaaaaaaaccceeeeeghiiiijllnnooooooossssttuuuuuunyyczzz"]
+  (let [from "ąàáäâãåăćčĉęèéëêĝĥìíïîĵľńňòóöőôõðśșšŝťțŭùúüűûñÿýçżźž"
+        to "aaaaaaaaccceeeeeghiiiijlnnooooooossssttuuuuuunyyczzz"]
     (apply str (map (fn [c] (if-let [i (index-of from c)] (char-at to i) c)) s))))
 
 (defn ascii?

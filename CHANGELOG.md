@@ -4,6 +4,8 @@
 ## 2.1.0
 
 ### New features
+
+* [#5](https://github.com/expez/superstring/issues/5) ` in `slug` now changes `ł` to `l`, instead of deleting the character.
 * Add `translate`, used to translate occurrences of certain characters into something else.
 
 ### Bugs fixed

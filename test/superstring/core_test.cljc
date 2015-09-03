@@ -484,7 +484,8 @@
 
 (defexamples slug-test
   (str/slug "This, That & the Other! Various Outré   Considerations")
-  "this-that-the-other-various-outre-considerations")
+  "this-that-the-other-various-outre-considerations"
+  (str/slug "ąćęółńśźż") "aceolnszz")
 
 (def string-alpha
   (gen/fmap #(apply str %) (gen/vector gen/char-alpha)))

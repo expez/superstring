@@ -616,6 +616,7 @@
   (-> s
       (replace #"\s+" "-")
       strip-accents
+      (translate {\ł \l})
       (replace #"[^A-Za-z0-9_.~-]" "")
       (replace #"-+" "-")
       lower-case))

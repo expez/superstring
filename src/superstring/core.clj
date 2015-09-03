@@ -573,6 +573,34 @@
                 true s)
     s))
 
+(defn translate
+  "Translate all characters in s according to the mappings found in tmap.
+
+  Any characters found in the set delete-chars will be pruned prior to
+  consulting tmap.
+
+  Any characters mapping to nil in tmap will also be deleted.
+
+  (translate \"abba\" {\\a \\b}) => bbbb
+  (translate \"abba\" {\\a \\b, \\b \\a}) => baab
+  (translate \"foo\" {\\a \b}) =>  foo
+  (translate \"gabba\" {\\a \\b} #{\\b}) => gbb
+  (translate \"gabba\" {\\a nil} #{\\b}) => g"
+  (^String
+   [^String s tmap]
+   (translate s tmap #{}))
+  (^String
+   [^String s tmap delete-chars]
+   (->> s
+        (remove delete-chars)
+        (map (fn [c] (let [replacement (get tmap c :not-found)]
+                       (cond
+                         (= replacement :not-found) c
+                         (nil? replacement) nil
+                         :else replacement))))
+        (remove nil?)
+        (apply str))))
+
 (defn slug
   "Transform s so it's suitable for use in URLs.
 

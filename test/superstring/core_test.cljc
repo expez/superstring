@@ -484,8 +484,7 @@
 
 (defexamples slug-test
   (str/slug "This, That & the Other! Various Outré   Considerations")
-  "this-that-the-other-various-outre-considerations"
-  (str/slug "ąćęółńśźż") "aceolnszz")
+  "this-that-the-other-various-outre-considerations")
 
 (def string-alpha
   (gen/fmap #(apply str %) (gen/vector gen/char-alpha)))
@@ -600,6 +599,29 @@ bar          baz") "foo bar baz"
 (defexamples re-quote
   (re-matches (re-pattern ".foo.") "afoob") "afoob"
   (re-matches (re-pattern (str/re-quote ".foo.")) "afoob") nil)
+
+(defexamples translate-test
+  (str/translate "abba" {\a \b}) "bbbb"
+  (str/translate "abba" {\a \b \b \a}) "baab"
+  (str/translate "foo" {\a \b }) "foo"
+  (str/translate "gabba" {\a \b} #{\b}) "gbb"
+  (str/translate "gabba" {\a nil} #{\b}) "g")
+
+(defspec translate-deletes-all-unwanted-chars
+  (prop/for-all [s (gen/not-empty gen/string)
+                 ds (gen/vector gen/char 100)]
+    (let [ds (distinct ds)
+          tmap (apply hash-map (if (even? (count ds)) ds (drop 1 ds)))]
+      (t/is (not (str/contains-any? s {} (map str (keys tmap))))))))
+
+(defspec translate-translates-all-chars-in-tmap
+  (prop/for-all [s (gen/not-empty gen/string)
+                 ds (gen/vector gen/char 10)]
+    (let [ds (distinct ds)
+          ds (if (even? (count ds)) ds (drop 1 ds))
+          tmap (apply hash-map ds)]
+      (t/is (not (str/contains-any? (str/translate s tmap)
+                                    (map str (keys tmap))))))))
 
 (t/deftest added-metadata-is-removed-from-aliased-vars
   (t/is (not (:added (meta #'str/trim)))))

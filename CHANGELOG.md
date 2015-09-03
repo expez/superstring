@@ -3,6 +3,9 @@
 
 ## 2.1.0
 
+### New features
+* Add `translate`, used to translate occurrences of certain characters into something else.
+
 ### Bugs fixed
 
 * [#5](https://github.com/expez/superstring/issues/5) `strip-accents` translated the letter `ł` to `l` in the cljs version.

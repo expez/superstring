@@ -587,10 +587,16 @@
   (translate \"gabba\" {\\a \\b} #{\\b}) => gbb
   (translate \"gabba\" {\\a nil} #{\\b}) => g"
   (^String
-   [^String s tmap]
+   [^String s ^clojure.lang.APersistentMap tmap]
+   {:pre [(string? s) (map? tmap)]
+    :post [(string? %)]}
    (translate s tmap #{}))
   (^String
-   [^String s tmap delete-chars]
+   [^String s
+    ^clojure.lang.APersistentMap tmap
+    ^clojure.lang.APersistentSet delete-chars]
+   {:pre [(string? s) (map? tmap) (set? delete-chars)]
+    :post [(string? %)]}
    (->> s
         (remove delete-chars)
         (map (fn [c] (let [replacement (get tmap c :not-found)]

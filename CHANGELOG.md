@@ -1,6 +1,19 @@
 
 # Changelog
 
+## Master unreleased
+
+## Changes
+
+- Bump Clojure and Clojurescript to dependency to (the equivalent of) 1.8.
+- Rename `includes?` to `contains?` and expand input values to include `java.lang.CharSequence`.
+- Rename `contains-all?` to `includes-all?`.
+- Rename `contains-any?` to `includes-any?`.
+- Alias `clojure.string/index-of?` replacing our own implementation.
+- Alias `clojure.string/last-index-of?` replacing our own implementation.
+- Extend the input value of `starts-with?` to include anything implementing `java.lang.CharSequence` to match the version in `clojure.string`.
+- Extend the input value of `ends-with?` to include anything implementing `java.lang.CharSequence` to match the version in `clojure.string`.
+
 ## 2.1.0
 
 ### New features

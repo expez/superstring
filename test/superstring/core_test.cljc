@@ -252,22 +252,22 @@
   (str/chop-prefix "Åfoo" "Å" :ignore-case) "foo")
 
 (defexamples contains-test?
-  (str/contains? "" "") ""
-  (str/contains? "1" "1") "1"
-  (str/contains? "foo" "fo") "foo"
-  (str/contains? "foobar" "qux") nil
-  (str/contains? "foobar" "BAR") nil
-  (str/contains? "foobar" "BAR" :ignore-case) "foobar"
-  (str/contains? "fooß" "ss" :ignore-case) nil
-  (str/contains? "fooß" "SS" :ignore-case) nil
-  (str/contains? "ß" "SS" :ignore-case) nil
-  (str/contains? "Albert Åberg" "åberg" :ignore-case) "Albert Åberg")
+  (str/includes? "" "") ""
+  (str/includes? "1" "1") "1"
+  (str/includes? "foo" "fo") "foo"
+  (str/includes? "foobar" "qux") nil
+  (str/includes? "foobar" "BAR") nil
+  (str/includes? "foobar" "BAR" :ignore-case) "foobar"
+  (str/includes? "fooß" "ss" :ignore-case) nil
+  (str/includes? "fooß" "SS" :ignore-case) nil
+  (str/includes? "ß" "SS" :ignore-case) nil
+  (str/includes? "Albert Åberg" "åberg" :ignore-case) "Albert Åberg")
 
-(defspec contains?-finds-generated-strings 100
+(defspec includes?-finds-generated-strings 100
   (prop/for-all [before gen/string
                  needle (gen/not-empty gen/string)
                  after gen/string]
-    (str/contains? (str before needle after) needle)))
+    (str/includes? (str before needle after) needle)))
 
 (defn- randomly-swapcase
   [s]
@@ -277,43 +277,43 @@
                               (if (str/lower-case? c)
                                 (str/upper-case c)
                                 c))
-                            :clj (if (Character/isUpperCase c)
-                                   (Character/toLowerCase c)
-                                   (if (Character/isLowerCase c)
-                                     (Character/toUpperCase c)
-                                     c))))]
+                      :clj (if (Character/isUpperCase c)
+                             (Character/toLowerCase c)
+                             (if (Character/isLowerCase c)
+                               (Character/toUpperCase c)
+                               c))))]
     (apply str (map #(if (> (rand-int 3) 1) (swapcase %) %) s))))
 
 
-(defspec contains?-can-ignore-case 100
+(defspec includes?-can-ignore-case 100
   (prop/for-all [before gen/string
                  needle (gen/fmap randomly-swapcase (gen/not-empty gen/string))
                  after gen/string]
-    (str/contains? (str before needle after) needle :ignore-case)))
+    (str/includes? (str before needle after) needle :ignore-case)))
 
-(defexamples contains-all?
-  (str/contains-all? "" []) ""
-  (str/contains-all? "" [""]) ""
-  (str/contains-all? "12" ["1" "2"]) "12"
-  (str/contains-all? "foo" ["fo" "o"]) "foo"
-  (str/contains-all? "foobar" ["qux"]) nil
-  (str/contains-all? "foobar" ["foo" "qux"]) nil
-  (str/contains-all? "foobar" ["BAR"]) nil
-  (str/contains-all? "foobar" ["BAR" "Foo"] :ignore-case) "foobar"
-  (str/contains-all? "Albert Åberg" ["åberg" "al"] :ignore-case) "Albert Åberg")
+(defexamples includes-all?
+  (str/includes-all? "" []) ""
+  (str/includes-all? "" [""]) ""
+  (str/includes-all? "12" ["1" "2"]) "12"
+  (str/includes-all? "foo" ["fo" "o"]) "foo"
+  (str/includes-all? "foobar" ["qux"]) nil
+  (str/includes-all? "foobar" ["foo" "qux"]) nil
+  (str/includes-all? "foobar" ["BAR"]) nil
+  (str/includes-all? "foobar" ["BAR" "Foo"] :ignore-case) "foobar"
+  (str/includes-all? "Albert Åberg" ["åberg" "al"] :ignore-case) "Albert Åberg")
 
-(defspec contains-any-finds-a-needle 100
+(defspec includes-any?-finds-a-needle 100
   (prop/for-all [before (gen/not-empty gen/string)
                  needle (gen/not-empty gen/string)
                  after (gen/not-empty gen/string)]
-    (str/contains-any? (str before needle after) [needle])))
+    (str/includes-any? (str before needle after) [needle])))
 
-(defexamples contains-any?
-  (str/contains-any? "foobar" ["foo"]) "foobar"
-  (str/contains-any? "foobar" ["qux"]) nil
-  (str/contains-any? "foobar" ["qux" "bar"]) "foobar"
-  (str/contains-any? "ß" ["ss" "SS"] :ignore-case) nil
-  (str/contains-any? "foobar" ["BAR"] :ignore-case) "foobar")
+(defexamples includes-any?
+  (str/includes-any? "foobar" ["foo"]) "foobar"
+  (str/includes-any? "foobar" ["qux"]) nil
+  (str/includes-any? "foobar" ["qux" "bar"]) "foobar"
+  (str/includes-any? "ß" ["ss" "SS"] :ignore-case) nil
+  (str/includes-any? "foobar" ["BAR"] :ignore-case) "foobar")
 
 (defspec contains-any-can-ignore-case 100
   (prop/for-all [before (gen/not-empty gen/string)
@@ -321,7 +321,7 @@
                  after (gen/not-empty gen/string)]
     (-> before
         (str (randomly-swapcase needle) after)
-        (str/contains-any? [needle] :ignore-case))))
+        (str/includes-any? [needle] :ignore-case))))
 
 (defspec truncated-strings-have-right-length 100
   (prop/for-all [[s len] (gen/bind (gen/such-that #(> (str/length %) 3) gen/string 100)
@@ -613,7 +613,7 @@ bar          baz") "foo bar baz"
                  ds (gen/vector gen/char 100)]
     (let [ds (distinct ds)
           tmap (apply hash-map (if (even? (count ds)) ds (drop 1 ds)))]
-      (t/is (not (str/contains-any? s {} (map str (keys tmap))))))))
+      (t/is (not (str/includes-any? s {} (map str (keys tmap))))))))
 
 (defspec translate-translates-all-chars-in-tmap
   (prop/for-all [s (gen/not-empty gen/string)
@@ -621,11 +621,23 @@ bar          baz") "foo bar baz"
     (let [ds (distinct ds)
           ds (if (even? (count ds)) ds (drop 1 ds))
           tmap (apply hash-map ds)]
-      (t/is (not (str/contains-any? (str/translate s tmap)
+      (t/is (not (str/includes-any? (str/translate s tmap)
                                     (map str (keys tmap))))))))
 
 (t/deftest added-metadata-is-removed-from-aliased-vars
   (t/is (not (:added (meta #'str/trim)))))
+
+#?(:clj
+   (do
+     (t/deftest starts-with?-handles-CharSequence
+       (t/is (str/starts-with? (StringBuffer. "foobar") "foo"))
+       (t/is (string? (str/starts-with? (StringBuffer. "foobar") "foo"))))
+     (t/deftest ends-with?-handles-CharSequence
+       (t/is (str/ends-with? (StringBuffer. "foobar") "bar"))
+       (t/is (string? (str/ends-with? (StringBuffer. "foobar") "bar"))))
+     (t/deftest includes?-handles-CharSequence
+       (t/is (str/includes? (StringBuffer. "foobar") "bar"))
+       (t/is (string? (str/includes? (StringBuffer. "foobar") "bar"))))))
 
 #?(:cljs
    (do

@@ -9,8 +9,8 @@
   :codox {:src-dir-uri "http://github.com/expez/superstring/blob/master/"
           :src-linenum-anchor-prefix "L"}
   :profiles {:dev {:dependencies [[org.clojure/test.check "0.7.0"]
-                                  [org.clojure/clojure "1.7.0"]
-                                  [org.clojure/clojurescript "1.7.28"]
+                                  [org.clojure/clojure "1.8.0"]
+                                  [org.clojure/clojurescript "1.7.228"]
                                   [com.cemerick/piggieback "0.2.1"]]
                    :repl-options {:init-ns superstring.core
                                   :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}}})

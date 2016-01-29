@@ -26,7 +26,7 @@ A ton of functions, either on `String`, or elsewhere, return `true` as the truth
 (require [superstring.core :as str])
 
 (some-> linkedIn-profile
-        (str/contains? "developer" :ignore-case)
+        (str/includes? "developer" :ignore-case)
         (str/contains-all? ["java" "xml"] :ignore-case)
         (str/contains-any? ["ninja" "rockstar"] :ignore-case)
         extract-contact-info

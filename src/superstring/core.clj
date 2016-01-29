@@ -1,6 +1,6 @@
 (ns superstring.core
   (:require clojure.string)
-  (:refer-clojure :exclude [reverse replace contains?])
+  (:refer-clojure :exclude [reverse replace])
   (:import java.text.Normalizer))
 
 (declare slice)
@@ -41,41 +41,6 @@
   {:pre [(string? s)]
    :post [(integer? %)]}
   (.length s))
-
-(defn index-of
-  "Return the starting position of the first occurrence of needle in s or nil.
-
-  If start is provided, start the search at that position in s."
-  (^Long
-   [^String s needle]
-   {:pre [(string? s) (string? needle)]
-    :post [(or (integer? %) (nil? %))]}
-   (index-of s needle 0))
-  (^Long
-   [^String s ^String needle ^long start]
-   {:pre [(string? s) (string? needle) (integer? start)]
-    :post [(or (integer? %) (nil? %))]}
-   (let [i (long (.indexOf s needle start))]
-     (when-not (= i -1)
-       i))))
-
-(defn last-index-of
-  "Searching backwards, return the starting position of the last occurrence of
-  needle in s or nil.
-
-  If start is provided, start the search at that position in s."
-  (^Long
-   [^String s ^String needle]
-   {:pre [(string? s) (string? needle)]
-    :post [(or (integer? %) (nil? %))]}
-   (last-index-of s needle (dec (length s))))
-  (^Long
-   [^String s ^String needle ^long start]
-   {:pre [(string? s) (string? needle) (integer? start)]
-    :post [(or (integer? %) (nil? %))]}
-   (let [i (long (.lastIndexOf s needle start))]
-     (when-not (= i -1)
-       i))))
 
 (defn- slice-relative-to-end
   [s index length]
@@ -118,18 +83,20 @@
 
   If a third argument is provided the string comparison is insensitive to case."
   (^String
-   [^String s ^String suffix]
-   {:pre [(string? s) (string? suffix)]
+   [^CharSequence s ^String suffix]
+   {:pre [(string? suffix)]
     :post [(or (string? %) (nil? %))]}
-   (when (.endsWith s suffix)
-     s))
+   (let [s (.toString s)]
+     (when (.endsWith s suffix)
+       s)))
   (^String
-   [^String s ^String suffix ignore-case]
-   {:pre [(string? s) (string? suffix)]
+   [^CharSequence s ^String suffix ignore-case]
+   {:pre [(string? suffix)]
     :post [(or (string? %) (nil? %))]}
    (if-not ignore-case
      (ends-with? s suffix)
-     (let [end (substring s (max 0 (- (length s) (length suffix))))]
+     (let [s (.toString s)
+           end (substring s (max 0 (- (length s) (length suffix))))]
        (when (.equalsIgnoreCase end suffix)
          s)))))
 
@@ -138,18 +105,20 @@
 
   If a third argument is provided the string comparison is insensitive to case."
   (^String
-   [^String s ^String prefix]
-   {:pre [(string? s) (string? prefix)]
+   [^CharSequence s ^String prefix]
+   {:pre [(string? prefix)]
     :post [(or (string? %) (nil? %))]}
-   (when (.startsWith s prefix)
-     s))
+   (let [s (.toString s)]
+     (when (.startsWith s prefix)
+       s)))
   (^String
-   [^String s ^String prefix ignore-case]
-   {:pre [(string? s) (string? prefix)]
+   [^CharSequence s ^String prefix ignore-case]
+   {:pre [(string? prefix)]
     :post [(or (string? %) (nil? %))]}
    (if-not ignore-case
      (starts-with? s prefix)
-     (let [beg (substring s 0 (min (length s) (length prefix)))]
+     (let [s (.toString s)
+           beg (substring s 0 (min (length s) (length prefix)))]
        (when (.equalsIgnoreCase beg prefix)
          s)))))
 
@@ -353,29 +322,30 @@
       (when (re-find p s)
         s))))
 
-(defn contains?
-  "Return s if s contains needle.
+(defn includes?
+  "Return s if s includes needle.
 
-  (contains? \"foobar\" \"foo\") => \"foobar\"
-  (contains? \"foobar\" \"qux\") => nil"
+  (includes? \"foobar\" \"foo\") => \"foobar\"
+  (includes? \"foobar\" \"qux\") => nil"
   (^String
-   [^String s ^String needle]
-   {:pre [(string? s) (string? needle)]
+   [^CharSequence s ^String needle]
+   {:pre [(string? needle)]
     :post [(or (string? %) (nil? %))]}
-   (case-sensitive-contains s needle))
+   (case-sensitive-contains (.toString s) needle))
   (^String
-   [^String s ^String needle ignore-case]
-   {:pre [(string? s) (string? needle)]
+   [^CharSequence s ^String needle ignore-case]
+   {:pre [(string? needle)]
     :post [(or (string? %) (nil? %))]}
-   (if ignore-case
-     (case-insensitive-contains s needle)
-     (case-sensitive-contains s needle))))
+   (let [s (.toString s)]
+     (if ignore-case
+       (case-insensitive-contains s needle)
+       (case-sensitive-contains s needle)))))
 
-(defn contains-all?
-  "Return s if s contains all needles.
+(defn includes-all?
+  "Return s if s includes all needles.
 
-  (contains-all? \"foo bar baz\" [\"foo\" \"bar\"]) => \"foo bar baz\"
-  (contains-all? \"foo bar\" [\"qux\" \"bar\"]) => nil"
+  (includes-all? \"foo bar baz\" [\"foo\" \"bar\"]) => \"foo bar baz\"
+  (includes-all? \"foo bar\" [\"qux\" \"bar\"]) => nil"
   (^String
    [^String s needles]
    {:pre [(string? s) (every? string? needles)]
@@ -389,13 +359,13 @@
    (if ignore-case
      (when (every? (partial case-insensitive-contains s) needles)
        s)
-     (contains-all? s needles))))
+     (includes-all? s needles))))
 
-(defn contains-any?
-  "Return s if s contains any of the needles.
+(defn includes-any?
+  "Return s if s includes any of the needles.
 
-  (contains-any? \"foo bar baz\" [\"foo\" \"qux\"]) => \"foo bar baz\"
-  (contains-any? \"foo bar\" [\"qux\" \"quux\"]) => nil"
+  (includes-any? \"foo bar baz\" [\"foo\" \"qux\"]) => \"foo bar baz\"
+  (includes-any? \"foo bar\" [\"qux\" \"quux\"]) => nil"
   (^String
    [^String s needles]
    {:pre [(string? s) (every? string? needles)]
@@ -407,7 +377,7 @@
     :post [(or (string? %) (nil? %))]}
    (if ignore-case
      (some (partial case-insensitive-contains s) needles)
-     (contains-any? s needles))))
+     (includes-any? s needles))))
 
 (defn truncate
   "If s is longer than len-3, cut it down to len-3 and append '...'."

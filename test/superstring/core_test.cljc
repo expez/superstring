@@ -643,3 +643,48 @@ bar          baz") "foo bar baz"
    (do
      (enable-console-print!)
      (set! *main-cli-fn* #(t/run-tests))))
+
+(defexamples url-encode
+  (str/url-encode nil)            nil
+  (str/url-encode "")             ""
+  (str/url-encode "foo")          "foo"
+  (str/url-encode "foo bar")      "foo%20bar"
+  (str/url-encode "foo%20bar")    "foo%2520bar" ;; String is assumed decoded.
+  (str/url-encode "foo bar+baz")  "foo%20bar%2Bbaz"
+  (str/url-encode "fôÖ.bár+bàz")  "f%F4%D6%2Eb%E1r%2Bb%E0z")
+
+(defexamples url-decode
+  (str/url-decode nil)                        nil
+  (str/url-decode "")                         ""
+  (str/url-decode "foo")                      "foo"
+  (str/url-decode "foo%20bar")                "foo bar"
+  (str/url-decode "foo%20bar%2Bbaz")          "foo bar+baz"
+  (str/url-decode "f%F4%D6%2Eb%E1r%2Bb%E0z")  "fôÖ.bár+bàz")
+
+(defspec url-encoding 100
+  (prop/for-all [s gen/string-ascii]
+    (t/is (-> s str/url-encode str/url-decode (= s)))))
+
+(defexamples url-encode-strict
+  (str/url-encode nil                       :strict? true) nil
+  (str/url-encode ""                        :strict? true) ""
+  (str/url-encode "foo"                     :strict? true) "foo"
+  (str/url-encode "foo bar"                 :strict? true) "foo bar"
+  (str/url-encode "foo%20bar"               :strict? true) "foo%20bar"
+  (str/url-encode "foo bar+baz"             :strict? true) "foo bar%2Bbaz"
+  (str/url-encode "fôÖ.bár+bàz"             :strict? true) "fôÖ.bár%2Bbàz")
+
+(defexamples url-decode-strict
+  (str/url-decode nil                       :strict? true) nil
+  (str/url-decode ""                        :strict? true) ""
+  (str/url-decode "foo"                     :strict? true) "foo"
+  (str/url-decode "foo%20bar"               :strict? true) "foo%20bar"
+  (str/url-decode "foo%20bar%2Bbaz"         :strict? true) "foo%20bar+baz"
+  (str/url-decode "f%F4%D6%2Eb%E1r%2Bb%E0z" :strict? true) "f%F4%D6%2Eb%E1r+b%E0z")
+
+(defspec url-encoding-strict 100
+  (prop/for-all [s gen/string-ascii]
+    (t/is (-> s
+              (str/url-encode :strict? true)
+              (str/url-decode :strict? true)
+              (= s)))))

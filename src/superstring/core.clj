@@ -713,3 +713,173 @@
   {:pre [(string? s)]
    :post (string? %)}
   (java.util.regex.Pattern/quote s))
+
+; URL encoding functions taken from https://github.com/slipstream/SlipStreamUI/blob/master/clj/src/slipstream/ui/util/clojure.clj
+; DOC: https://tools.ietf.org/html/rfc3986
+; SOURCE: http://www.w3schools.com/tags/ref_urlencode.asp
+; SOURCE: http://www.degraeve.com/reference/urlencoding.php
+; SOURCE: https://en.wikipedia.org/wiki/Percent-encoding#Percent-encoding_reserved_characters
+
+(def ^:private ^:const url-encode-chars-strict
+  "URL reserved characters as per https://tools.ietf.org/html/rfc3986#section-2.2."
+  { \! "%21"
+    \# "%23"
+    \$ "%24"
+    \& "%26"
+    \' "%27"
+    \( "%28"
+    \) "%29"
+    \* "%2A"
+    \+ "%2B"
+    \, "%2C"
+    \/ "%2F"
+    \: "%3A"
+    \; "%3B"
+    \= "%3D"
+    \? "%3F"
+    \@ "%40"
+    \[ "%5B"
+    \] "%5D"})
+
+(def ^:private ^:const url-encode-chars
+  (merge url-encode-chars-strict
+         {\backspace  "%08"
+          \tab        "%09"
+          \newline    "%0A"
+          \return     "%0D"
+          \space      "%20"
+          \"          "%22"
+          \%          "%25"
+          \-          "%2D"
+          \.          "%2E"
+          \<          "%3C"
+          \>          "%3E"
+          \\          "%5C"
+          \^          "%5E"
+          \_          "%5F"
+          \`          "%60"
+          \{          "%7B"
+          \|          "%7C"
+          \}          "%7D"
+          \~          "%7E"
+          \¢          "%A2"
+          \£          "%A3"
+          \¥          "%A5"
+          \¦          "%A6"
+          \§          "%A7"
+          \«          "%AB"
+          \¬          "%AC"
+          \¯          "%AD"
+          \º          "%B0"
+          \±          "%B1"
+          \ª          "%B2"
+          \´          "%B4"
+          \µ          "%B5"
+          \»          "%BB"
+          \¼          "%BC"
+          \½          "%BD"
+          \¿          "%BF"
+          \À          "%C0"
+          \Á          "%C1"
+          \Â          "%C2"
+          \Ã          "%C3"
+          \Ä          "%C4"
+          \Å          "%C5"
+          \Æ          "%C6"
+          \Ç          "%C7"
+          \È          "%C8"
+          \É          "%C9"
+          \Ê          "%CA"
+          \Ë          "%CB"
+          \Ì          "%CC"
+          \Í          "%CD"
+          \Î          "%CE"
+          \Ï          "%CF"
+          \Ð          "%D0"
+          \Ñ          "%D1"
+          \Ò          "%D2"
+          \Ó          "%D3"
+          \Ô          "%D4"
+          \Õ          "%D5"
+          \Ö          "%D6"
+          \Ø          "%D8"
+          \Ù          "%D9"
+          \Ú          "%DA"
+          \Û          "%DB"
+          \Ü          "%DC"
+          \Ý          "%DD"
+          \Þ          "%DE"
+          \ß          "%DF"
+          \à          "%E0"
+          \á          "%E1"
+          \â          "%E2"
+          \ã          "%E3"
+          \ä          "%E4"
+          \å          "%E5"
+          \æ          "%E6"
+          \ç          "%E7"
+          \è          "%E8"
+          \é          "%E9"
+          \ê          "%EA"
+          \ë          "%EB"
+          \ì          "%EC"
+          \í          "%ED"
+          \î          "%EE"
+          \ï          "%EF"
+          \ð          "%F0"
+          \ñ          "%F1"
+          \ò          "%F2"
+          \ó          "%F3"
+          \ô          "%F4"
+          \õ          "%F5"
+          \ö          "%F6"
+          \÷          "%F7"
+          \ø          "%F8"
+          \ù          "%F9"
+          \ú          "%FA"
+          \û          "%FB"
+          \ü          "%FC"
+          \ý          "%FD"
+          \þ          "%FE"
+          \ÿ          "%FF"}))
+
+(defn url-encode
+  "Returns the s string URL encoded. If s is nil, nil is returned.
+  It accepts a :strict? flag (false by default) to encode only URL reserved
+  characters as per https://tools.ietf.org/html/rfc3986#section-2.2."
+  ^String [^String s & {:keys [strict?]}]
+  {:pre   [(or (nil? s) (string? s))]
+   :post  [(or (nil? %) (string? %))]}
+  (and s
+       (escape s (if strict?
+                   url-encode-chars-strict
+                   url-encode-chars))))
+
+(defn- invert-with-default
+  "Returns the inverted map m prepared to be used as the replacement function in
+  clojure.string/replace, i.e. chars are stringified and it returns the same
+  input if it's not found in the map (instead of nil)."
+  [m]
+  ; NOTE: Chars need to be stringified in order to work with the replace
+  ;       function. Otherwise we could direcly use clojure.set/map-invert.
+  (let [inverted-char-map (zipmap (vals m) (map str (keys m)))]
+    (fn [match]
+      (inverted-char-map match match))))
+
+(def ^:private url-decode-strings-strict
+  (invert-with-default url-encode-chars-strict))
+
+(def ^:private url-decode-strings
+  (invert-with-default url-encode-chars))
+
+(defn url-decode
+  "Returns the s string URL decoded. If s is nil, nil is returned.
+  It accepts a :strict? flag (false by default) to decode only URL reserved
+  characters as per https://tools.ietf.org/html/rfc3986#section-2.2."
+  ^String [^String s & {:keys [strict?]}]
+  {:pre   [(or (nil? s) (string? s))]
+   :post  [(or (nil? %) (string? %))]}
+  (and s
+       (replace s #"%[0-9A-Fa-f]{2}" (if strict?
+                                       url-decode-strings-strict
+                                       url-decode-strings))))

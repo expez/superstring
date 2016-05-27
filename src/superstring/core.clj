@@ -844,16 +844,25 @@
           \ÿ          "%FF"}))
 
 (defn url-encode
-  "Returns the s string URL encoded. If s is nil, nil is returned.
-  It accepts a :strict? flag (false by default) to encode only URL reserved
-  characters as per https://tools.ietf.org/html/rfc3986#section-2.2."
-  ^String [^String s & {:keys [strict?]}]
-  {:pre   [(or (nil? s) (string? s))]
-   :post  [(or (nil? %) (string? %))]}
-  (and s
-       (escape s (if strict?
-                   url-encode-chars-strict
-                   url-encode-chars))))
+  "Returns the s string URL encoded. It accepts a 'strict?' flag (false by
+  default) to encode only URL reserved characters as per
+  https://tools.ietf.org/html/rfc3986#section-2.2.
+
+  (url-encode \"foo\") => \"foo\"
+  (url-encode \":foo bar+baz_\") => \"%3Afoo%20bar%2Bbaz%5F\"
+  (url-encode \":foo bar+baz_\" :strict) => \"%3Afoo bar%2Bbaz_\""
+  (^String
+   [^String s strict?]
+   {:pre   [(string? s)]
+    :post  [(string? %)]}
+   (if-not strict?
+     (url-encode s)
+     (escape s url-encode-chars-strict)))
+  (^String
+   [^String s]
+   {:pre   [(string? s)]
+    :post  [(string? %)]}
+   (escape s url-encode-chars)))
 
 (defn- invert-with-default
   "Returns the inverted map m prepared to be used as the replacement function in
@@ -872,14 +881,26 @@
 (def ^:private url-decode-strings
   (invert-with-default url-encode-chars))
 
+(def ^:private re-url-code
+  #"%[0-9A-Fa-f]{2}")
+
 (defn url-decode
-  "Returns the s string URL decoded. If s is nil, nil is returned.
-  It accepts a :strict? flag (false by default) to decode only URL reserved
-  characters as per https://tools.ietf.org/html/rfc3986#section-2.2."
-  ^String [^String s & {:keys [strict?]}]
-  {:pre   [(or (nil? s) (string? s))]
-   :post  [(or (nil? %) (string? %))]}
-  (and s
-       (replace s #"%[0-9A-Fa-f]{2}" (if strict?
-                                       url-decode-strings-strict
-                                       url-decode-strings))))
+  "Returns the s string URL decoded. It accepts a 'strict?' flag (false by
+  default) to encode only URL reserved characters as per
+  https://tools.ietf.org/html/rfc3986#section-2.2.
+
+  (url-decode \"foo\") => \"foo\"
+  (url-decode \"%3Afoo%20bar%2Bbaz%5F\") => \":foo bar+baz_\"
+  (url-decode \"%3Afoo%20bar%2Bbaz%5F\" :strict) => \":foo%20bar+baz%5F\""
+  (^String
+   [^String s strict?]
+   {:pre   [(string? s)]
+    :post  [(string? %)]}
+   (if-not strict?
+     (url-decode s)
+     (replace s re-url-code url-decode-strings-strict)))
+  (^String
+   [^String s]
+   {:pre   [(string? s)]
+    :post  [(string? %)]}
+   (replace s re-url-code url-decode-strings)))

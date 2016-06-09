@@ -742,6 +742,55 @@
     \] "%5D"})
 
 (def ^:private ^:const url-encode-chars
+  "This includes some frequently "
+  (merge url-encode-chars-strict
+         {\tab        "%09"
+          \newline    "%0A"
+          \return     "%0D"
+          \space      "%20"
+          \%          "%25"}))
+
+; " < > # % { } | \ ^ ~ [ ] `
+
+(def ^:private ^:const unsafe-chars
+  "From rfc1738, Chapter 2.2. URL Character Encoding Issues:
+
+   Characters can be unsafe for a number of reasons. The space character is
+   unsafe because significant spaces may disappear and insignificant spaces may
+   be introduced when URLs are transcribed or typeset or subjected to the
+   treatment of word-processing programs. The characters \"<\" and \">\" are
+   unsafe because they are used as the delimiters around URLs in free text; the
+   quote mark (\"\"\") is used to delimit URLs in some systems. The character
+   \"#\" is unsafe and should always be encoded because it is used in World Wide
+   Web and in other systems to delimit a URL from a fragment/anchor identifier
+   that might follow it. The character \"%\" is unsafe because it is used for
+   encodings of other characters. Other characters are unsafe because gateways
+   and other transport agents are known to sometimes modify such characters.
+   These characters are \"{\", \"}\", \"|\", \"\\\", \"^\", \"~\", \"[\",
+   \"]\", and \"`\".
+
+   All unsafe characters must always be encoded within a URL. For example, the
+   character \"#\" must be encoded within URLs even in systems that do not
+   normally deal with fragment or anchor identifiers, so that if the URL is
+   copied into another system that does use them, it will not be necessary to
+   change the URL encoding.
+
+   SOURCE: http://www.ietf.org/rfc/rfc1738.txt
+   SOURCE: https://tools.ietf.org/html/rfc1738"
+  {\space      "%20"
+   \<          "%3C"
+   \>          "%3E"
+   \"          "%22"
+   \%          "%25"
+   \{          "%7B"
+   \}          "%7D"
+   \|          "%7C"
+   \\          "%5C"
+   \^          "%5E"
+   \~          "%7E"
+   \`          "%60"})
+
+(def ^:private ^:const url-encode-chars
   (merge url-encode-chars-strict
          {\backspace  "%08"
           \tab        "%09"
@@ -843,6 +892,33 @@
           \þ          "%FE"
           \ÿ          "%FF"}))
 
+(def ^:private ^:const reserved-chars
+  (-> url-encode-chars-strict
+      keys
+      set))
+
+(defn- encode
+  [c]
+  (if (reserved-chars c)
+    (str "%" (-> c int (Integer/toString 16) upper-case))
+    c))
+
+(defn url-encode-2
+  "Returns the s string URL encoded. It accepts a 'strict?' flag (false by
+  default) to encode only URL reserved characters as per
+  https://tools.ietf.org/html/rfc3986#section-2.2.
+
+  (url-encode \"foo\") => \"foo\"
+  (url-encode \":foo bar+baz_\") => \"%3Afoo%20bar%2Bbaz%5F\"
+  (url-encode \":foo bar+baz_\" :strict) => \"%3Afoo bar%2Bbaz_\""
+  ^String [^String s]
+  {:pre   [(string? s)]
+   :post  [(string? %)]
+   }
+  (->> s
+       (map encode)
+       join))
+
 (defn url-encode
   "Returns the s string URL encoded. It accepts a 'strict?' flag (false by
   default) to encode only URL reserved characters as per
@@ -904,3 +980,129 @@
    {:pre   [(string? s)]
     :post  [(string? %)]}
    (replace s re-url-code url-decode-strings)))
+
+
+; -----------------------
+
+(defn- percent-substitution-map
+  [char-set]
+  (into {} (map #(->> % int Integer/toHexString upper-case (str "%") (vector %))
+                char-set)))
+
+(def ^:private ^:const url-reserved-chars
+  "From rfc3986, Section 2.2. Reserved Characters:
+
+   URIs include components and subcomponents that are delimited by characters in
+   the \"reserved\" set. These characters are called \"reserved\" because they may
+   (or may not) be defined as delimiters by the generic syntax, by each scheme-
+   specific syntax, or by the implementation-specific syntax of a URI's
+   dereferencing algorithm. If data for a URI component would conflict with a
+   reserved character's purpose as a delimiter, then the conflicting data must
+   be percent-encoded before the URI is formed.
+
+   SOURCE: https://tools.ietf.org/html/rfc3986#section-2.2"
+  #{ \! \# \$ \& \'\(\) \* \+ \, \/ \: \; \= \? \@ \[\]})
+
+(def ^:private ^:const url-unsafe-chars
+  "From rfc1738, Section 2.2. URL Character Encoding Issues:
+
+   Characters can be unsafe for a number of reasons. The space character is
+   unsafe because significant spaces may disappear and insignificant spaces may
+   be introduced when URLs are transcribed or typeset or subjected to the
+   treatment of word-processing programs. The characters \"<\" and \">\" are
+   unsafe because they are used as the delimiters around URLs in free text; the
+   quote mark (\"\"\") is used to delimit URLs in some systems. The character
+   \"#\" is unsafe and should always be encoded because it is used in World Wide
+   Web and in other systems to delimit a URL from a fragment/anchor identifier
+   that might follow it. The character \"%\" is unsafe because it is used for
+   encodings of other characters. Other characters are unsafe because gateways
+   and other transport agents are known to sometimes modify such characters.
+   These characters are \"{\", \"}\", \"|\", \"\\\", \"^\", \"~\", \"[\",
+   \"]\", and \"`\".
+
+   All unsafe characters must always be encoded within a URL. For example, the
+   character \"#\" must be encoded within URLs even in systems that do not
+   normally deal with fragment or anchor identifiers, so that if the URL is
+   copied into another system that does use them, it will not be necessary to
+   change the URL encoding.
+
+   SOURCE: https://tools.ietf.org/html/rfc1738"
+  #{\space \< \> \" \# \% \{ \} \| \\ \^ \~ \[ \] \`})
+
+(def ^:private ^:const url-unreserved-chars
+  "From rfc1738, Section 2.3: Unreserved Characters
+
+   Characters that are allowed in a URI but do not have a reserved purpose are
+   called unreserved. These include uppercase and lowercase letters, decimal
+   digits, hyphen, period, underscore, and tilde.
+
+      unreserved  = ALPHA / DIGIT / \"-\" / \".\" / \"_\" / \"~\"
+
+   URIs that differ in the replacement of an unreserved character with its
+   corresponding percent-encoded US-ASCII octet are equivalent: they identify
+   the same resource. However, URI comparison implementations do not always
+   perform normalization prior to comparison (see Section 6). For consistency,
+   percent-encoded octets in the ranges of ALPHA (%41-%5A and %61-%7A), DIGIT
+   (%30-%39), hyphen (%2D), period (%2E), underscore (%5F), or tilde (%7E)
+   should not be created by URI producers and, when found in a URI, should be
+   decoded to their corresponding unreserved characters by URI normalizers.
+
+   SOURCE: https://tools.ietf.org/html/rfc3986#section-2.3"
+  (-> #{\- \. \_ \~ }
+      (into (map char (range (int \a) (int \z))))
+      (into (map char (range (int \A) (int \Z))))
+      (into (map char (range (int \0) (int \9))))))
+
+(def ^:private ^:const ascii-control-chars
+  "From rfc1738, Section 2.2. URL Character Encoding Issues:
+
+   SOURCE: https://tools.ietf.org/html/rfc1738"
+  (->> (conj (range 0 31) 127)
+       (map char)
+       set))
+
+(def ^:private ^:const non-ascii-chars
+  "From rfc1738, Section 2.2. URL Character Encoding Issues:
+
+   SOURCE: https://tools.ietf.org/html/rfc1738"
+  (->> (range 128 255)
+       (map char)
+       set))
+
+; SOURCE: http://stackoverflow.com/a/13041851
+(defn percent-encode-char
+  [c]
+  (->> (.getBytes c "UTF-8")
+       (map (partial format "%%%02x"))
+       (apply str)
+       upper-case))
+
+(def ^:private ^:const url-encoding-map
+  (percent-substitution-map
+    (clojure.set/union url-reserved-chars
+                       url-unsafe-chars
+                       ascii-control-chars
+                       non-ascii-chars)))
+
+(defn url-encode-3
+  "Returns the s string URL encoded. It accepts a 'strict?' flag (false by
+  default) to encode only URL reserved characters as per
+  https://tools.ietf.org/html/rfc3986#section-2.2.
+
+  (url-encode \"foo\") => \"foo\"
+  (url-encode \":foo bar+baz_\") => \"%3Afoo%20bar%2Bbaz%5F\"
+  (url-encode \":foo bar+baz_\" :strict) => \"%3Afoo bar%2Bbaz_\""
+  ^String [^String s]
+   {:pre   [(string? s)]
+    :post  [(string? %)]}
+   (escape s url-encoding-map))
+
+
+; (println (time (dotimes [_ 1000000] (url-encode ":foo bar+baz_" :strict))))
+; ; "Elapsed time: 1636.550868 msecs"
+; (println (time (dotimes [_ 1000000] (url-encode-2 ":foo bar+baz_"))))
+; ; "Elapsed time: 5345.586232 msecs"
+; (println (time (dotimes [_ 1000000] (url-encode-3 ":foo bar+baz_"))))
+; ; "Elapsed time: 1142.184097 msecs"
+; (println (time (dotimes [_ 1000000] (java.net.URLEncoder/encode ":foo bar+baz_" "UTF-8")))))
+; ; "Elapsed time: 606.400508 msecs"

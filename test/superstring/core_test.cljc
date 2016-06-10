@@ -627,6 +627,45 @@ bar          baz") "foo bar baz"
 (t/deftest added-metadata-is-removed-from-aliased-vars
   (t/is (not (:added (meta #'str/trim)))))
 
+(defexamples url-encode
+  (str/url-encode "")               ""
+  (str/url-encode "foo")            "foo"
+  (str/url-encode "foo bar")        "foo+bar"
+  (str/url-encode "foo  bar")       "foo++bar"
+  (str/url-encode "foo + bar")      "foo+%2B+bar"
+  (str/url-encode "foo%20bar")      "foo%2520bar" ;; String is assumed decoded.
+  (str/url-encode ":foo bar+baz_")  "%3Afoo+bar%2Bbaz_"
+  (str/url-encode "fôÖ.bár+bàz")    "f%C3%B4%C3%96.b%C3%A1r%2Bb%C3%A0z"
+  (str/url-encode "~!*()'")         "%7E%21*%28%29%27"
+  (str/url-encode "@#$&=:/,;?+\"")  "%40%23%24%26%3D%3A%2F%2C%3B%3F%2B%22"
+  (str/url-encode "あﯰ邏இ")         "%E3%81%82%EF%AF%B0%EF%A4%93%E0%AE%87")
+
+(t/deftest url-nil-encoding
+  (t/is #?(:cljs  (thrown? js/Error       (str/url-encode nil))
+           :clj   (thrown? AssertionError (str/url-encode nil)))))
+
+(defexamples url-decode
+  (str/url-decode "")                                     ""
+  (str/url-decode "foo")                                  "foo"
+  (str/url-decode "foo+bar")                              "foo bar"
+  (str/url-decode "foo++bar")                             "foo  bar"
+  (str/url-decode "foo+%2B+bar")                          "foo + bar"
+  (str/url-decode "foo%20bar")                            "foo bar"
+  (str/url-decode "foo%2520bar")                          "foo%20bar"
+  (str/url-decode "%3Afoo%20bar%2Bbaz%5F")                ":foo bar+baz_"
+  (str/url-decode "f%C3%B4%C3%96.b%C3%A1r%2Bb%C3%A0z")    "fôÖ.bár+bàz"
+  (str/url-decode "%7E%21*%28%29%27")                     "~!*()'"
+  (str/url-decode "%40%23%24%26%3D%3A%2F%2C%3B%3F%2B%22") "@#$&=:/,;?+\""
+  (str/url-decode "%E3%81%82%EF%AF%B0%EF%A4%93%E0%AE%87") "あﯰ邏இ")
+
+(t/deftest url-nil-decoding
+  (t/is #?(:cljs  (thrown? js/Error       (str/url-decode nil))
+           :clj   (thrown? AssertionError (str/url-decode nil)))))
+
+(defspec url-encoding 100
+  (prop/for-all [s gen/string-ascii]
+    (t/is (-> s str/url-encode str/url-decode (= s)))))
+
 #?(:clj
    (do
      (t/deftest starts-with?-handles-CharSequence
@@ -643,60 +682,3 @@ bar          baz") "foo bar baz"
    (do
      (enable-console-print!)
      (set! *main-cli-fn* #(t/run-tests))))
-
-(defexamples url-encode
-  (str/url-encode "")               ""
-  (str/url-encode "foo")            "foo"
-  (str/url-encode "foo bar")        "foo%20bar"
-  (str/url-encode "foo%20bar")      "foo%2520bar" ;; String is assumed decoded.
-  (str/url-encode ":foo bar+baz_")  "%3Afoo%20bar%2Bbaz%5F"
-  (str/url-encode "fôÖ.bár+bàz")    "f%F4%D6%2Eb%E1r%2Bb%E0z")
-
-(t/deftest url-nil-encoding
-  (t/is #?(:cljs  (thrown? js/Error       (str/url-encode nil))
-           :clj   (thrown? AssertionError (str/url-encode nil)))))
-
-(defexamples url-decode
-  (str/url-decode "")                         ""
-  (str/url-decode "foo")                      "foo"
-  (str/url-decode "foo%20bar")                "foo bar"
-  (str/url-decode "%3Afoo%20bar%2Bbaz%5F")     ":foo bar+baz_"
-  (str/url-decode "f%F4%D6%2Eb%E1r%2Bb%E0z")  "fôÖ.bár+bàz")
-
-(t/deftest url-nil-decoding
-  (t/is #?(:cljs  (thrown? js/Error       (str/url-decode nil))
-           :clj   (thrown? AssertionError (str/url-decode nil)))))
-
-(defspec url-encoding 100
-  (prop/for-all [s gen/string-ascii]
-    (t/is (-> s str/url-encode str/url-decode (= s)))))
-
-(defexamples url-encode-strict
-  (str/url-encode ""                        :strict) ""
-  (str/url-encode "foo"                     :strict) "foo"
-  (str/url-encode "foo bar"                 :strict) "foo bar"
-  (str/url-encode "foo%20bar"               :strict) "foo%20bar"
-  (str/url-encode ":foo bar+baz_"           :strict) "%3Afoo bar%2Bbaz_"
-  (str/url-encode "fôÖ.bár+bàz"             :strict) "fôÖ.bár%2Bbàz")
-
-(t/deftest url-nil-encoding-strict
-  (t/is #?(:cljs  (thrown? js/Error       (str/url-encode nil :strict))
-           :clj   (thrown? AssertionError (str/url-encode nil :strict)))))
-
-(defexamples url-decode-strict
-  (str/url-decode ""                        :strict) ""
-  (str/url-decode "foo"                     :strict) "foo"
-  (str/url-decode "foo%20bar"               :strict) "foo%20bar"
-  (str/url-decode "%3Afoo%20bar%2Bbaz%5F"   :strict) ":foo%20bar+baz%5F"
-  (str/url-decode "f%F4%D6%2Eb%E1r%2Bb%E0z" :strict) "f%F4%D6%2Eb%E1r+b%E0z")
-
-(t/deftest url-nil-decoding-strict
-  (t/is #?(:cljs  (thrown? js/Error       (str/url-decode nil :strict))
-           :clj   (thrown? AssertionError (str/url-decode nil :strict)))))
-
-(defspec url-encoding-strict 100
-  (prop/for-all [s gen/string-ascii]
-    (t/is (-> s
-              (str/url-encode :strict)
-              (str/url-decode :strict)
-              (= s)))))

@@ -10,7 +10,8 @@ Add the following dependency to your `project.clj` file:
 
 ## Documentation
 
-[API Docs](http://expez.github.io/superstring/doc/superstring.core.html)
+[API Docs](http://expez.github.io/superstring/doc/superstring.core.html)<br>
+<br>
 [Live documentation](https://cdn.rawgit.com/expez/superstring/master/live-documentation.html)
 
 ## Raison d'être

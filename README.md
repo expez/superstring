@@ -63,7 +63,7 @@ Yes!
 
 ## License
 
-Copyright &copy; 2015 Lars Andersen
+Copyright &copy; 2016 Lars Andersen
 
 This project is licensed under the [Eclipse Public License 1.0][license].
 

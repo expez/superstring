@@ -662,3 +662,31 @@
             (when (= (aget ls i j) @z)
               (swap! ret conj (substring s1 (- i @z) i)))))))
     @ret))
+
+(defn url-encode
+  "Translates a string into application/x-www-form-urlencoded format using UTF-8
+   encoding scheme."
+  [^String s]
+  {:pre  [(string? s)]
+   :post [(string? %)]}
+  (-> s
+      js/encodeURIComponent
+      ; #{\~ \! \* \( \) \'} are not encoded by js/encodeURIComponent
+      ; They are encoded in order to match java version of url-encode.
+      (replace "~"    "%7E")
+      (replace "!"    "%21")
+      (replace "("    "%28")
+      (replace ")"    "%29")
+      (replace "'"    "%27")
+      ; Spaces are encoded as "+" in order to match java version of url-encode.
+      (replace "%20"  "+")))
+
+(defn url-decode
+  "Decodes a application/x-www-form-urlencoded string using a UTF-8 encoding
+   scheme."
+  [^String s]
+  {:pre  [(string? s)]
+   :post [(string? %)]}
+  (-> s
+      (replace "+" "%20")
+      js/decodeURIComponent))

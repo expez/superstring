@@ -713,3 +713,19 @@
   {:pre [(string? s)]
    :post (string? %)}
   (java.util.regex.Pattern/quote s))
+
+(defn url-encode
+  "Translates a string into application/x-www-form-urlencoded format using UTF-8
+   encoding scheme."
+  ^String [^String s]
+  {:pre  [(string? s)]
+   :post [(string? %)]}
+  (java.net.URLEncoder/encode s "UTF-8"))
+
+(defn url-decode
+  "Decodes a application/x-www-form-urlencoded string using a UTF-8 encoding
+   scheme."
+  ^String [^String s]
+  {:pre  [(string? s)]
+   :post [(string? %)]}
+  (java.net.URLDecoder/decode s "UTF-8"))

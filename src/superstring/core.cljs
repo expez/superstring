@@ -21,6 +21,7 @@
 (def upper-case str/upper-case)
 (def index-of str/index-of)
 (def last-index-of str/last-index-of)
+(def replace-first str/replace-first)
 
 (def substring clojure.core/subs)
 

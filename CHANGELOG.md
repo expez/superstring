@@ -3,11 +3,22 @@
 
 ## Master unreleased
 
-## Changes
+## 3.0.0
+
+## New features
 
 - [#12](https://github.com/expez/superstring/issues/12) Add `replace-last`.
 - [#11](https://github.com/expez/superstring/issues/11) Add `some?` which is the complement of `blank?`.
-- Bump Clojure and Clojurescript to dependency to (the equivalent of) 1.8.
+
+### Bugs fixed
+
+- Add missing cljs alias for `replace-first`.
+
+## Changes
+
+Most of these are motivated by the changes to `clojure.string` in 1.8.
+
+- Bump Clojure and Clojurescript dependencies to latest.
 - Rename `includes?` to `contains?` and expand input values to include `java.lang.CharSequence`.
 - Rename `contains-all?` to `includes-all?`.
 - Rename `contains-any?` to `includes-any?`.

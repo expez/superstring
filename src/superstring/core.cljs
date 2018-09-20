@@ -1,7 +1,7 @@
 (ns superstring.core
   (:require [clojure.string :as str]
             [clojure.set :as set])
-  (:refer-clojure :exclude [reverse replace]))
+  (:refer-clojure :exclude [reverse replace some?]))
 
 (declare slice)
 
@@ -663,3 +663,11 @@
             (when (= (aget ls i j) @z)
               (swap! ret conj (substring s1 (- i @z) i)))))))
     @ret))
+
+(defn some?
+  "Complement of `blank?`"
+  ^String [^String s]
+  {:pre [(or (nil? s) (string? s))]
+   :post [(or (nil? %) (and (string? %) (seq %)))]}
+  (when ((complement blank?) s)
+    s))

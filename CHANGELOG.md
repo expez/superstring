@@ -5,6 +5,7 @@
 
 ## Changes
 
+- [#11](https://github.com/expez/superstring/issues/11) Add `some?` which is the complement of `blank?`.
 - Bump Clojure and Clojurescript to dependency to (the equivalent of) 1.8.
 - Rename `includes?` to `contains?` and expand input values to include `java.lang.CharSequence`.
 - Rename `contains-all?` to `includes-all?`.

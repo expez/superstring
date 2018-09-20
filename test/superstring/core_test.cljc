@@ -643,3 +643,8 @@ bar          baz") "foo bar baz"
    (do
      (enable-console-print!)
      (set! *main-cli-fn* #(t/run-tests))))
+
+(defexamples some?-test
+  (str/some? "foo") "foo"
+  (str/some? "") nil
+  (str/some? nil) nil)

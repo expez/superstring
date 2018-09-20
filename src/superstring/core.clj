@@ -1,6 +1,6 @@
 (ns superstring.core
   (:require clojure.string)
-  (:refer-clojure :exclude [reverse replace])
+  (:refer-clojure :exclude [reverse replace some?])
   (:import java.text.Normalizer))
 
 (declare slice)
@@ -713,3 +713,13 @@
   {:pre [(string? s)]
    :post (string? %)}
   (java.util.regex.Pattern/quote s))
+
+(defn some?
+  "Complement of `blank?`"
+  {:added "3.0"}
+  ^String [^String s]
+  {:pre [(or (nil? s) (string? s))]
+   :post [(or (nil? %) (and (string? %) (seq %)))]}
+  (when ((complement blank?) s)
+    s))
+

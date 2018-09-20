@@ -1,7 +1,7 @@
 (ns superstring.core
-  (:require clojure.string)
   (:refer-clojure :exclude [reverse replace some?])
-  (:import java.text.Normalizer))
+  (:import java.text.Normalizer
+           java.util.regex.Pattern))
 
 (declare slice)
 
@@ -723,3 +723,33 @@
   (when ((complement blank?) s)
     s))
 
+(defn- start-and-end-of-last-regexp-match
+  [^String s ^Pattern re]
+  (let [m (re-matcher re s)]
+    (when (.find m)
+      (loop [start (.start m)
+             end (.end m)]
+        (if (.find m)
+          (recur (.start m) (.end m))
+          [start end])))))
+
+(defn replace-last
+  "Like `replace-first`, but replaces the last occurrence instead of the first."
+  {:added "3.0"}
+  [^CharSequence s match replacement]
+  {:pre [(instance? CharSequence s)]
+   :post (string? %)}
+  (let [s (.toString s)]
+    (cond
+      (or (instance? Character match)
+          (instance? CharSequence match))
+      (if-let [start (last-index-of s match)]
+        (str (substring s 0 start)
+             (replace-first (substring s start) match replacement))
+        s)
+      (instance? Pattern match)
+      (if-let [[match-beg match-end] (start-and-end-of-last-regexp-match s match)]
+        (let [replacement (replace-first (substring s match-beg) match replacement)]
+          (str (substring s 0 match-beg) replacement))
+        s)
+      :else (throw (IllegalArgumentException. (str "Invalid match arg: " match))))))

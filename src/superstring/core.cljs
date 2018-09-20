@@ -671,3 +671,36 @@
    :post [(or (nil? %) (and (string? %) (seq %)))]}
   (when ((complement blank?) s)
     s))
+
+(defn- start-and-end-of-last-regexp-match
+  [^String s re]
+  (let [start
+        (loop [start (.search s re)]
+          (let [next-match-beg (.search (substring s (inc start)) re)]
+            (if (#{0 -1} next-match-beg)
+              start
+              (recur (+ start next-match-beg)))))
+        ;; "" happens when pattern doesn't occur in s
+        matched-substring (or (first (.match s re)) "")
+        end (+ start (length matched-substring))]
+    [start end]))
+
+(defn replace-last
+  "Like `replace-first`, but replaces the last occurrence instead of the first."
+  {:added "3.0"}
+  [^String s match replacement]
+  {:pre [(string? s)]
+   :post
+   (string? %)}
+  (cond
+    (string? match)
+    (if-let [start (last-index-of s match)]
+      (str (substring s 0 start)
+           (replace-first (substring s start) match replacement))
+      s)
+    (= (type match) (type #"regex"))
+    (if-let [[match-beg match-end] (start-and-end-of-last-regexp-match s match)]
+      (let [replacement (replace-first (substring s match-beg) match replacement)]
+        (str (substring s 0 match-beg) replacement))
+      s)
+    :else (throw (js/Error (str "Invalid match arg: " match)))))

@@ -7,13 +7,13 @@
               [cljs.test.check :refer [quick-check]]
               [superstring.core :as str])
              (:require-macros [superstring.test-helpers :refer [defexamples]])]
-            :clj [(:require [clojure.test :as t]
-                            [clojure.test.check
-                             [clojure-test :refer [defspec]]
-                             [generators :as gen]
-                             [properties :as prop]]
-                            [superstring.test-helpers :refer [defexamples]]
-                            [superstring.core :as str])]))
+      :clj [(:require [clojure.test :as t]
+                      [clojure.test.check
+                       [clojure-test :refer [defspec]]
+                       [generators :as gen]
+                       [properties :as prop]]
+                      [superstring.test-helpers :refer [defexamples]]
+                      [superstring.core :as str])]))
 
 (defspec length-test 100
   (prop/for-all [s gen/string]
@@ -522,7 +522,7 @@
   (str/collapse-whitespace "foo
 
 bar          baz") "foo bar baz"
-(str/collapse-whitespace " foo bar baz ") " foo bar baz ")
+  (str/collapse-whitespace " foo bar baz ") " foo bar baz ")
 
 (defspec levenshtein-distance-is-at-least-difference-between-string-lenghts 100
   (prop/for-all [s1 (gen/not-empty gen/string)
@@ -569,7 +569,7 @@ bar          baz") "foo bar baz"
 (t/deftest distance-throws-on-unknown
   (t/is #?(:cljs (thrown? js/Error
                           (str/distance "s1" "s2" :unknown-algorithm))
-                 :clj (thrown? IllegalArgumentException (str/distance :unknown-algorithm)))))
+           :clj (thrown? IllegalArgumentException (str/distance :unknown-algorithm)))))
 
 (defexamples longest-common-substring
   (str/longest-common-substring "fooquxbar" "foobar") #{"foo" "bar"}
@@ -639,12 +639,40 @@ bar          baz") "foo bar baz"
        (t/is (str/includes? (StringBuffer. "foobar") "bar"))
        (t/is (string? (str/includes? (StringBuffer. "foobar") "bar"))))))
 
-#?(:cljs
-   (do
-     (enable-console-print!)
-     (set! *main-cli-fn* #(t/run-tests))))
-
 (defexamples some?-test
   (str/some? "foo") "foo"
   (str/some? "") nil
   (str/some? nil) nil)
+
+(defexamples replace-last-test
+  (str/replace-last "foobarbar" "bar" "baz") "foobarbaz"
+  (str/replace-last "foobarbar" #"bar" "baz") "foobarbaz"
+  (str/replace-last "foobar" #"quz" "baz") "foobar"
+  (str/replace-last "foobar" "quz" "baz") "foobar"
+  ;; This example is slightly degenerate but I just want it to be the
+  ;; same degenerate thing replace-first returns.
+  (str/replace-last "foobar" "" "baz") "foobarbaz"
+  (str/replace-last "foobarbar" #"bar" (constantly "baz")) "foobarbaz")
+
+(defn- remove-regex-chars [s]
+  (str/replace s "$" "a"))
+
+(defspec replace-last-always-replaces-last 100
+  (prop/for-all [suffix gen/string
+                 match (gen/not-empty gen/string)
+                 prefix (gen/not-empty gen/string)
+                 replacement (gen/fmap remove-regex-chars gen/string)]
+    (let [s (str prefix match suffix)
+          correct-result (str/reverse (str/replace-first (str/reverse s)
+                                                         (str/reverse match)
+                                                         (str/reverse replacement)))]
+      (t/is (= (str/replace-last s match replacement) correct-result)))))
+
+#?(:clj
+   (defexamples replace-last-clj-test
+     (str/replace-last "foooar" \o \b) "foobar"))
+
+#?(:cljs
+   (do
+     (enable-console-print!)
+     (set! *main-cli-fn* #(t/run-tests))))

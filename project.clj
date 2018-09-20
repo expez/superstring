@@ -3,7 +3,7 @@
   :url "http://github.com/expez/superstring"
   :license {:name "Eclipse Public License 1.0"
             :url "http://www.eclipse.org/legal/epl-v10.html"
-            :year 2015
+            :year 2018
             :key "epl-1.0"}
   :plugins [[codox "0.8.11"]]
   :codox {:src-dir-uri "http://github.com/expez/superstring/blob/master/"

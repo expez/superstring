@@ -19,7 +19,7 @@
 Most of these are motivated by the changes to `clojure.string` in 1.8.
 
 - Bump Clojure and Clojurescript dependencies to latest.
-- Rename `includes?` to `contains?` and expand input values to include `java.lang.CharSequence`.
+- Rename `contains?` to `includes?` and expand input values to include `java.lang.CharSequence`.
 - Rename `contains-all?` to `includes-all?`.
 - Rename `contains-any?` to `includes-any?`.
 - Alias `clojure.string/index-of?` replacing our own implementation.

@@ -22,7 +22,7 @@ It's also annoying to pull in `$library` as well as `clojure.string`
 to get complete coverage.  Or pull in `$library` where the functions in `clojure.string` are renamed, or re-implemented with slightly different semantics.  I've opted to alias all the vars in
 `clojure.string` so you only need to require a single namespace and because I know you hate surprises.
 
-A ton of functions, either on `String`, or elsewhere, return `true` as the truthy value.  In a lisp this is a terrible a waste.  To afford string punning this library returns `s` as the truthy value so you can do stuff like this:
+A ton of functions, either on `String`, or elsewhere, return `true` as the truthy value.  In a lisp this is a terrible waste.  To afford string punning this library returns `s` as the truthy value so you can do stuff like this:
 
 ```clj
 (require [superstring.core :as str])

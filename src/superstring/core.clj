@@ -486,8 +486,9 @@
   ^String [^String s]
   {:pre [(string? s)]
    :post [(string? %)]}
-  (let [words (split-words s)]
-    (join ""  (conj (map capitalize (rest words)) (lower-case (first words))))))
+  (if-let [words (seq (split-words s))]
+    (join ""  (conj (map capitalize (rest words)) (lower-case (first words))))
+    s))
 
 (defn pascal-case
   "Upper the case first char in s and use capitalization to separate words.

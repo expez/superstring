@@ -3,6 +3,14 @@
 
 ## Master unreleased
 
+## 3.1.0
+
+### Bugs fixed
+
+- [#18](https://github.com/expez/superstring/issues/18) camel-case vs empty string
+- [#17](https://github.com/expez/superstring/issues/17) Slice with length outside string boundary
+- [#16](https://github.com/expez/superstring/issues/16) slug vs uppercase diacritical marks
+
 ## 3.0.0
 
 ## New features

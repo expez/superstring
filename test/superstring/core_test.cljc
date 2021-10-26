@@ -138,7 +138,8 @@
   ;; string starting from beg
   (prop/for-all [s (gen/not-empty gen/string)]
     (let [beg (rand-int (str/length s))]
-      (= (str/slice s beg (+ (str/length s) beg)) (str/substring s beg)))))
+      (= (str/slice s beg (+ (str/length s) beg))
+         (str/substring s beg)))))
 
 (defspec slices-with-index-outside-str-is-nil 100
   (prop/for-all [[s index] (gen/bind (gen/not-empty gen/string)
@@ -166,7 +167,8 @@
   (str/slice "0123456" 3 100) "3456"
   (str/slice "0123456" -1) "6"
   (str/slice "0123456" -3 2) "45"
-  (str/slice "0123456" -3 100) "456")
+  (str/slice "0123456" -3 100) "456"
+  (superstring.core/slice "012345678901234567890123456789"  20 11) "0123456789")
 
 (defspec right-pad-results-in-strings-with-new-width 100
   (prop/for-all

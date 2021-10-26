@@ -55,16 +55,15 @@
   ([^String s index length]
    {:pre [(string? s) (integer? index) (integer? length)]
     :post [(or (string? %) (nil? %))]}
-   (cond
-     (neg? length) nil
-     (neg? (+ (superstring.core/length s) index))
-     nil ; slice relative to end falls outside s
-     (neg? index) (slice-relative-to-end s index length)
-     (>= index (superstring.core/length s)) nil
-     (> (- length index) (superstring.core/length (substring s index)))
-     (substring s index)
-     :else (let [end (+ index length)]
-             (substring s index end)))))
+   (let [str-len (superstring.core/length s)]
+     (cond
+       (neg? length) nil
+       (neg? (+ str-len index))
+       nil ; slice relative to end falls outside s
+       (neg? index) (slice-relative-to-end s index length)
+       (>= index str-len) nil
+       :else (let [end (min (+ index length) str-len)]
+               (substring s index end))))))
 
 (defn- equals-ignore-case [s1 s2]
   (when

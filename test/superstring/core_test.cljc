@@ -1,17 +1,15 @@
 (ns superstring.core-test
   #?@(:cljs [(:require
-              [cljs.test :as t :include-macros true]
-              [cljs.test.check.cljs-test :refer-macros [defspec]]
-              [cljs.test.check.generators :as gen]
-              [cljs.test.check.properties :as prop :include-macros true]
-              [cljs.test.check :refer [quick-check]]
+              [clojure.test :as t :include-macros true]
+              [clojure.test.check.clojure-test :refer-macros [defspec]]
+              [clojure.test.check.generators :as gen]
+              [clojure.test.check.properties :as prop :include-macros true]
               [superstring.core :as str])
              (:require-macros [superstring.test-helpers :refer [defexamples]])]
       :clj [(:require [clojure.test :as t]
-                      [clojure.test.check
-                       [clojure-test :refer [defspec]]
-                       [generators :as gen]
-                       [properties :as prop]]
+                      [clojure.test.check.clojure-test :refer [defspec]]
+                      [clojure.test.check.generators :as gen]
+                      [clojure.test.check.properties :as prop]
                       [superstring.test-helpers :refer [defexamples]]
                       [superstring.core :as str])]))
 

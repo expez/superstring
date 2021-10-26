@@ -554,11 +554,11 @@
    :post [(string? %)]}
   (-> s
       (replace #"\s+" "-")
+      lower-case
       strip-accents
       (translate {"ł" "l"})
       (replace #"[^A-Za-z0-9_.~-]" "")
-      (replace #"-+" "-")
-      lower-case))
+      (replace #"-+" "-")))
 
 (defn mixed-case?
   "Return s if s contains both upper and lower case letters.

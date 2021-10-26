@@ -1,0 +1,112 @@
+version: 2.1
+
+# Default settings for executors
+
+defaults: &defaults
+  working_directory: ~/repo
+
+# Runners for OpenJDK 8/11/16/17
+
+executors:
+  openjdk8:
+    docker:
+      - image: circleci/clojure:openjdk-8-lein-2.9.1-node
+    environment:
+      LEIN_ROOT: "true"   # we intended to run lein as root
+      JVM_OPTS: -Xmx3200m # limit the maximum heap size to prevent out of memory errors
+    <<: *defaults
+  openjdk11:
+    docker:
+      - image: circleci/clojure:openjdk-11-lein-2.9.3-buster-node
+    environment:
+      LEIN_ROOT: "true"   # we intended to run lein as root
+      JVM_OPTS: -Xmx3200m --illegal-access=deny # forbid reflective access (this flag doesn't exist for JDK8 or JDK17+)
+    <<: *defaults
+  openjdk16:
+    docker:
+      - image: circleci/clojure:openjdk-16-lein-2.9.5-buster-node
+    environment:
+      LEIN_ROOT: "true"   # we intended to run lein as root
+      JVM_OPTS: -Xmx3200m --illegal-access=deny # forbid reflective access (this flag doesn't exist for JDK8 or JDK17+)
+    <<: *defaults
+  openjdk17:
+    docker:
+      - image: circleci/clojure:openjdk-17-lein-2.9.5-buster-node
+    environment:
+      LEIN_ROOT: "true"   # we intended to run lein as root
+      JVM_OPTS: -Xmx3200m
+    <<: *defaults
+
+commands:
+  with_cache:
+    description: |
+      Run a set of steps with Maven dependencies and Clojure classpath cache
+      files cached.
+      This command restores ~/.m2 and .cpcache if they were previously cached,
+      then runs the provided steps, and finally saves the cache.
+    parameters:
+      steps:
+        type: steps
+      files:
+        description: Files to consider when creating the cache key
+        type: string
+        default: "project.clj"
+      cache_version:
+        type: string
+        description: "Change this value to force a cache update"
+        default: "1"
+    steps:
+      - run:
+          name: Generate Cache Checksum
+          command: |
+            for file in << parameters.files >>
+            do
+              find . -name $file -exec cat {} +
+            done | shasum | awk '{print $1}' > /tmp/clojure_cache_seed
+      - restore_cache:
+          key: clojure-<< parameters.cache_version >>-{{ checksum "/tmp/clojure_cache_seed" }}
+      - steps: << parameters.steps >>
+      - save_cache:
+          paths:
+            - ~/.m2
+            - .cpcache
+          key: clojure-<< parameters.cache_version >>-{{ checksum "/tmp/clojure_cache_seed" }}
+
+jobs:
+  test_code:
+    description: |
+      Run tests against given version of JDK and Clojure
+    parameters:
+      jdk_version:
+        description: Version of JDK to test against
+        type: string
+      clojure_version:
+        description: Version of Clojure to test against
+        type: string
+    executor: << parameters.jdk_version >>
+    environment:
+      VERSION: << parameters.clojure_version >>
+    steps:
+      - checkout
+      - with_cache:
+          cache_version: << parameters.clojure_version >>|<< parameters.jdk_version >>
+          steps:
+            - run:
+                name: Clojure tests
+                command: lein test superstring.core-test
+            - run:
+                name: Build cljs tests
+                command: ./scripts/build
+            - run:
+                name: Clojurescript tests
+                command: node ./out/tests.js
+
+workflows:
+  version: 2.1
+  ci-test-matrix:
+    jobs:
+      - test_code:
+          matrix:
+            parameters:
+              clojure_version: ["1.8", "1.9", "1.10", "master"]
+              jdk_version: [openjdk8, openjdk11, openjdk16, openjdk17]

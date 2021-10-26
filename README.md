@@ -1,4 +1,4 @@
-# superstring [![Build Status](https://travis-ci.org/expez/superstring.svg?branch=master)](https://travis-ci.org/expez/superstring)
+# superstring [![CircleCI](https://circleci.com/gh/expez/superstring/tree/master.svg?style=svg)](https://circleci.com/gh/expez/superstring/tree/master)
 
 ## Installation
 
@@ -63,7 +63,7 @@ Yes!
 
 ## License
 
-Copyright &copy; 2018 Lars Andersen
+Copyright &copy; 2021 Lars Andersen
 
 This project is licensed under the [Eclipse Public License 1.0][license].
 

@@ -1,9 +1,0 @@
-language: clojure
-script:
-  - lein test superstring.core-test
-  - ./scripts/build
-  - node ./out/tests.js
-jdk:
-  - openjdk8
-  - oraclejdk8
-  - oraclejdk9

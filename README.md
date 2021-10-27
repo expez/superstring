@@ -12,7 +12,6 @@ Add the following dependency to your `project.clj` file:
 
 [API Docs](http://expez.github.io/superstring/doc/superstring.core.html)<br>
 <br>
-[Live documentation](https://cdn.rawgit.com/expez/superstring/master/live-documentation.html)
 
 ## Raison d'être
 <img src="https://cloud.githubusercontent.com/assets/1006557/8227518/71776fb2-15a8-11e5-82b5-72e4a5fd4db0.jpg" align="right">

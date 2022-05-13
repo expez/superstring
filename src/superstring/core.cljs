@@ -653,9 +653,7 @@
     (doseq [i (range 1 rows)]
       (doseq [j (range 1 cols)]
         (when(= (.charAt s1 (dec i)) (.charAt s2 (dec j)))
-          (if (or (= i 0) (= j 0))
-            (aset ls i j 1)
-            (aset ls i j (inc (aget ls (dec i) (dec j)))))
+          (aset ls i j (inc (aget ls (dec i) (dec j))))
           (if (> (aget ls i j) @z)
             (do
               (reset! z (aget ls i j))

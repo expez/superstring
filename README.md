@@ -24,7 +24,7 @@ to get complete coverage.  Or pull in `$library` where the functions in `clojure
 A ton of functions, either on `String`, or elsewhere, return `true` as the truthy value.  In a lisp this is a terrible waste.  To afford string punning this library returns `s` as the truthy value so you can do stuff like this:
 
 ```clj
-(require [superstring.core :as str])
+(require '[superstring.core :as str])
 
 (some-> linkedIn-profile
         (str/includes? "developer" :ignore-case)

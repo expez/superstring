@@ -1,6 +1,7 @@
 (ns superstring.core
-  (:require [clojure.string :as str]
-            [clojure.set :as set])
+  (:require
+   [clojure.string :as str]
+   [clojure.set :as set])
   (:refer-clojure :exclude [reverse replace some?]))
 
 (declare slice)
@@ -22,7 +23,6 @@
 (def index-of str/index-of)
 (def last-index-of str/last-index-of)
 (def replace-first str/replace-first)
-
 (def substring clojure.core/subs)
 
 (defn length

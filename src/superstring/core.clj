@@ -1,9 +1,16 @@
 (ns superstring.core
   (:refer-clojure :exclude [reverse replace some?])
-  (:import java.text.Normalizer
-           java.util.regex.Pattern))
+  (:import
+   java.text.Normalizer
+   java.util.regex.Pattern))
 
-(declare slice)
+(declare slice
+         ;; Declare everything we re-export and alias, to make life easier on tooling using static
+         ;; analysis
+         substring
+         ends-with? capitalize reverse join replace-first starts-with? escape last-index-of
+         re-quote-replacement includes? replace split-lines lower-case trim-newline upper-case
+         split trimr index-of trim triml blank?)
 
 ;; Taken from [jackknife "0.1.6"]
 (defmacro ^:private defalias

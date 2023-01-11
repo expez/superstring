@@ -5,7 +5,7 @@
 Add the following dependency to your `project.clj` file:
 
 ```clj
-[superstring "3.1.0"]
+[superstring "3.1.1"]
 ```
 
 ## Documentation
@@ -31,7 +31,7 @@ A ton of functions, either on `String`, or elsewhere, return `true` as the truth
         (str/includes-all? ["java" "xml"] :ignore-case)
         (str/includes-any? ["ninja" "rockstar"] :ignore-case)
         extract-contact-info
-        send-unsolicited-job-offer)
+        send-unsolicited-job-offer!)
 ```
 
 ## Quirks
@@ -62,7 +62,7 @@ Yes!
 
 ## License
 
-Copyright &copy; 2021 Lars Andersen
+Copyright &copy; 2023 Lars Andersen
 
 This project is licensed under the [Eclipse Public License 1.0][license].
 

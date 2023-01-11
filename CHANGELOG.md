@@ -3,6 +3,12 @@
 
 ## Master unreleased
 
+## 3.1.1
+
+## Changes
+
+- `declare` every variable we re-export or alias, to make life easier on tooling relying on static analysis.
+
 ## 3.1.0
 
 ### Bugs fixed

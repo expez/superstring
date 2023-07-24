@@ -3,6 +3,10 @@
 
 ## Master unreleased
 
+## 3.2.0
+
+### Bugs fixed
+
 - [#22](https://github.com/expez/superstring/issues/22) Fix `lisp-case` removing special characters
 
 ## 3.1.1

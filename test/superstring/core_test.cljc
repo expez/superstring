@@ -416,6 +416,11 @@
     (str/lower-case? (str/lisp-case s))))
 
 (defexamples lisp-case-test
+  (str/lisp-case "abcAbc?abc") "abc-abc?abc"
+  (str/lisp-case "abcAbc!") "abc-abc!"
+  (str/lisp-case "abcAbc*abc") "abc-abc*abc"
+  (str/lisp-case "123Abc") "123-abc"
+  (str/lisp-case "123aBc") "123a-bc"
   (str/lisp-case "PascalCase") "pascal-case"
   (str/lisp-case "setID") "set-id"
   (str/lisp-case "HTTPRequest") "http-request"

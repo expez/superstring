@@ -421,12 +421,10 @@
   (remove empty?
           (-> s
               (replace #"_|-" " ")
-              (replace #"([A-Z])(([A-Z])([a-z0-9]))"
-                       "$1 $2")
-              (replace
-               #"([a-z])([A-Z])" "$1 $2")
-              (split
-               #"[^\w0-9]+"))))
+              (replace #"([A-Z])(([A-Z])([a-z0-9]))" "$1 $2")
+              (replace #"([a-z])([A-Z])" "$1 $2")
+              (replace #"(\d)([A-Z])" "$1 $2")
+              (split #"\s+"))))
 
 (defn lisp-case
   "Lower case s and separate words with dashes.

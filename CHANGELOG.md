@@ -3,6 +3,8 @@
 
 ## Master unreleased
 
+- [#22](https://github.com/expez/superstring/issues/22) Fix `lisp-case` removing special characters
+
 ## 3.1.1
 
 ## Changes
@@ -13,9 +15,9 @@
 
 ### Bugs fixed
 
-- [#18](https://github.com/expez/superstring/issues/18) camel-case vs empty string
-- [#17](https://github.com/expez/superstring/issues/17) Slice with length outside string boundary
-- [#16](https://github.com/expez/superstring/issues/16) slug vs uppercase diacritical marks
+- [#18](https://github.com/expez/superstring/issues/18) `camel-case` vs empty string
+- [#17](https://github.com/expez/superstring/issues/17) `slice` with length outside string boundary
+- [#16](https://github.com/expez/superstring/issues/16) `slug` vs uppercase diacritical marks
 
 ## 3.0.0
 

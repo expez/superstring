@@ -463,12 +463,10 @@
   (remove empty?
           (-> s
               (replace #"_|-" " ")
-              (replace #"(\p{javaUpperCase})((\p{javaUpperCase})[(\p{javaLowerCase})0-9])"
-                       "$1 $2")
-              (replace
-               #"(\p{javaLowerCase})(\p{javaUpperCase})" "$1 $2")
-              (split
-               #"[^\w0-9]+"))))
+              (replace #"(\p{javaUpperCase})((\p{javaUpperCase})[(\p{javaLowerCase})0-9])" "$1 $2")
+              (replace #"(\p{javaLowerCase})(\p{javaUpperCase})" "$1 $2")
+              (replace #"(\p{Digit})(\p{javaUpperCase})" "$1 $2")
+              (split #"\p{Blank}+"))))
 
 (defn lisp-case
   "Lower case s and separate words with dashes.

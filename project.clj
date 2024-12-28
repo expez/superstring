@@ -1,9 +1,9 @@
-(defproject superstring "3.2.0"
+(defproject superstring "3.2.1"
   :description "String manipulation library for clojure and clojurescript"
   :url "http://github.com/expez/superstring"
   :license {:name "Eclipse Public License 1.0"
             :url "http://www.eclipse.org/legal/epl-v10.html"
-            :year 2023
+            :year 2024
             :key "epl-1.0"}
   :plugins [[codox "0.8.11"]]
   :codox {:src-dir-uri "http://github.com/expez/superstring/blob/master/"

@@ -1,7 +1,13 @@
 
 # Changelog
 
-## Master unreleased
+<!-- ## Master unreleased -->
+
+## 3.2.1
+
+### Bugs fixed
+
+- [#23](https://github.com/expez/superstring/issues/23) Fix `lisp-case` erroneously splitting on parenthesis.
 
 ## 3.2.0
 

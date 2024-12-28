@@ -10,7 +10,7 @@
           :src-linenum-anchor-prefix "L"}
   :profiles {:dev {:dependencies [[org.clojure/test.check "1.1.1"]
                                   [org.clojure/clojure "1.11.1"]
-                                  [org.clojure/clojurescript"1.11.60" ]
+                                  [org.clojure/clojurescript"1.11.132" ]
                                   [cider/piggieback "0.5.3"]]
                    :repl-options {:init-ns superstring.core
                                   :nrepl-middleware [cider.piggieback/wrap-cljs-repl]}}})

@@ -425,6 +425,7 @@
   (str/lisp-case "setID") "set-id"
   (str/lisp-case "HTTPRequest") "http-request"
   (str/lisp-case "snake_case") "snake-case"
+  (str/lisp-case "message(SMS)") "message(sms)"
   (str/lisp-case "SCREAMING_SNAKE_CASE") "screaming-snake-case")
 
 (defexamples camel-case-test

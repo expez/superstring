@@ -463,7 +463,7 @@
   (remove empty?
           (-> s
               (replace #"_|-" " ")
-              (replace #"(\p{javaUpperCase})((\p{javaUpperCase})[(\p{javaLowerCase})0-9])" "$1 $2")
+              (replace #"(\p{javaUpperCase})((\p{javaUpperCase})[\p{javaLowerCase}0-9])" "$1 $2")
               (replace #"(\p{javaLowerCase})(\p{javaUpperCase})" "$1 $2")
               (replace #"(\p{Digit})(\p{javaUpperCase})" "$1 $2")
               (split #"\p{Blank}+"))))
